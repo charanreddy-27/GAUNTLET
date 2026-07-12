@@ -1,0 +1,8 @@
+tool: lint
+rules:
+  - id: LINT-ANY-ERROR
+    pattern: '\[(LINT-\d+)\] ERROR: (?P<msg>.+)'
+    severity: ERROR
+  - id: LINT-ANY-WARNING
+    pattern: '\[(LINT-\d+)\] WARNING: (?P<msg>.+)'
+    severity: WARNING

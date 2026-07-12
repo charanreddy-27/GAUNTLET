@@ -1,0 +1,10 @@
+waivers:
+  - rule_id: LINT-042
+    match: "clk_en"                # substring match against violation message
+    reason: "Legacy debug signal; removal tracked in JIRA IPREG-1234"
+    owner: charan
+
+  - rule_id: SIM-ERR-007
+    match: "u_fifo_rx"
+    reason: "Known TB artifact on unit suite; fix in review (IPREG-1301)"
+    owner: charan

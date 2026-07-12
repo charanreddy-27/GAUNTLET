@@ -11,10 +11,15 @@ from datetime import datetime
 from pathlib import Path
 
 from .flow import FlowValidationError, load_flow
-from .models import PASSING_STATUSES, RunRecord, StepResult
+from .models import PASSING_STATUSES, FlowSpec, RunRecord, StepResult
+from .parsing.parser import LogEvaluator
+from .parsing.rules import Rulepack, RulepackError, load_rulepack
+from .parsing.waivers import WaiverError, load_waivers
+from .report import render_run
 from .scheduler import Scheduler
 
 RUNS_DIR = Path("runs")
+CONFIG_ERRORS = (FlowValidationError, RulepackError, WaiverError)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -31,6 +36,8 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="continue independent branches after a failure",
     )
+    p_run.add_argument("--rulepacks-dir", default="rulepacks")
+    p_run.add_argument("--waivers", default="waivers/waivers.yaml")
 
     args = parser.parse_args(argv)
     if args.command == "run":
@@ -41,9 +48,12 @@ def main(argv: list[str] | None = None) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     try:
         flow = load_flow(args.flow_file)
-    except FlowValidationError as exc:
+        rulepacks = _load_rulepacks(flow, Path(args.rulepacks_dir))
+        waivers = load_waivers(args.waivers)
+    except CONFIG_ERRORS as exc:
         print(f"config error: {exc}", file=sys.stderr)
         return 2
+    evaluator = LogEvaluator(rulepacks, waivers)
 
     run_id = _new_run_id()
     run_dir = RUNS_DIR / run_id
@@ -57,6 +67,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         flow,
         max_workers=args.workers,
         keep_going=args.keep_going,
+        evaluator=evaluator,
         on_complete=on_complete,
     )
     results = scheduler.execute(run_dir)
@@ -71,8 +82,15 @@ def cmd_run(args: argparse.Namespace) -> int:
         results=results,
     )
     _write_manifest(run_dir, record)
-    print(f"\n{record.status}  {run_id}  (manifest: {run_dir / 'manifest.json'})")
+    print()
+    print(render_run(record))
     return 0 if all_ok else 1
+
+
+def _load_rulepacks(flow: FlowSpec, rulepacks_dir: Path) -> dict[str, Rulepack]:
+    """Load every rulepack the flow references, once each, up front."""
+    names = {s.rulepack for s in flow.steps if s.rulepack}
+    return {name: load_rulepack(rulepacks_dir / f"{name}.yaml") for name in names}
 
 
 def _new_run_id() -> str:

@@ -1,0 +1,8 @@
+tool: sim
+rules:
+  - id: SIM-ANY-ERROR
+    pattern: '\[(SIM-ERR-\d+)\] ERROR: (?P<msg>.+)'
+    severity: ERROR
+  - id: SIM-ANY-WARNING
+    pattern: '\[(SIM-WRN-\d+)\] WARNING: (?P<msg>.+)'
+    severity: WARNING
