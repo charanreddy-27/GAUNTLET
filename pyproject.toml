@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gauntlet"
+version = "0.1.0"
+description = "Miniature IP-regression platform: DAG flow runner, EDA-style log parsing, waivers, run-to-run diff"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+gauntlet = "gauntlet.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["gauntlet*"]

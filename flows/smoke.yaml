@@ -1,0 +1,24 @@
+name: smoke_ip_block_a
+description: Nightly-style regression for IP block A (mocked tools)
+defaults:
+  timeout_s: 60
+steps:
+  - id: lint_rtl
+    cmd: python tools/mock/mock_lint.py --design ip_block_a
+    rulepack: lint
+
+  - id: sim_unit
+    cmd: python tools/mock/mock_sim.py --suite unit --design ip_block_a
+    depends_on: [lint_rtl]
+    rulepack: sim
+    timeout_s: 45
+
+  - id: sim_integration
+    cmd: python tools/mock/mock_sim.py --suite integration --design ip_block_a
+    depends_on: [lint_rtl]
+    rulepack: sim
+
+  - id: synth_quick
+    cmd: python tools/mock/mock_synth.py --design ip_block_a --effort quick
+    depends_on: [sim_unit, sim_integration]
+    rulepack: synth
