@@ -10,15 +10,18 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from .diff import diff_runs
 from .flow import FlowValidationError, load_flow
 from .models import PASSING_STATUSES, FlowSpec, RunRecord, StepResult
 from .parsing.parser import LogEvaluator
 from .parsing.rules import Rulepack, RulepackError, load_rulepack
 from .parsing.waivers import WaiverError, load_waivers
-from .report import render_run
+from .report import render_diff, render_history, render_run
 from .scheduler import Scheduler
+from .store import RunNotFoundError, RunStore
 
 RUNS_DIR = Path("runs")
+DB_PATH = RUNS_DIR / "gauntlet.db"
 CONFIG_ERRORS = (FlowValidationError, RulepackError, WaiverError)
 
 
@@ -39,10 +42,24 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("--rulepacks-dir", default="rulepacks")
     p_run.add_argument("--waivers", default="waivers/waivers.yaml")
 
+    p_history = sub.add_parser("history", help="list recent runs")
+    p_history.add_argument("-n", type=int, default=10, dest="limit")
+
+    p_report = sub.add_parser("report", help="re-render a stored run's report")
+    p_report.add_argument("run_id")
+
+    p_diff = sub.add_parser("diff", help="compare two runs (exit 1 on new failures)")
+    p_diff.add_argument("run_a")
+    p_diff.add_argument("run_b")
+
     args = parser.parse_args(argv)
-    if args.command == "run":
-        return cmd_run(args)
-    return 2
+    commands = {
+        "run": cmd_run,
+        "history": cmd_history,
+        "report": cmd_report,
+        "diff": cmd_diff,
+    }
+    return commands[args.command](args)
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -82,9 +99,51 @@ def cmd_run(args: argparse.Namespace) -> int:
         results=results,
     )
     _write_manifest(run_dir, record)
+    store = RunStore(DB_PATH)
+    try:
+        store.save(record)
+    finally:
+        store.close()
     print()
     print(render_run(record))
     return 0 if all_ok else 1
+
+
+def cmd_history(args: argparse.Namespace) -> int:
+    store = RunStore(DB_PATH)
+    try:
+        print(render_history(store.list_runs(args.limit)))
+    finally:
+        store.close()
+    return 0
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    store = RunStore(DB_PATH)
+    try:
+        record = store.load(args.run_id)
+    except RunNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        store.close()
+    print(render_run(record))
+    return 0
+
+
+def cmd_diff(args: argparse.Namespace) -> int:
+    store = RunStore(DB_PATH)
+    try:
+        run_a = store.load(args.run_a)
+        run_b = store.load(args.run_b)
+    except RunNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        store.close()
+    diff = diff_runs(run_a, run_b)
+    print(render_diff(diff))
+    return 1 if diff.new_failures else 0
 
 
 def _load_rulepacks(flow: FlowSpec, rulepacks_dir: Path) -> dict[str, Rulepack]:

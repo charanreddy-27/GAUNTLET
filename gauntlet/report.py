@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from .diff import RunDiff
 from .models import RunRecord, StepResult, StepStatus
 
 _MAX_MSG = 60
@@ -36,12 +37,7 @@ def render_run(record: RunRecord) -> str:
 
 
 def run_duration_s(record: RunRecord) -> float:
-    try:
-        start = datetime.fromisoformat(record.started_at)
-        end = datetime.fromisoformat(record.finished_at)
-        return (end - start).total_seconds()
-    except ValueError:
-        return 0.0
+    return _iso_delta_s(record.started_at, record.finished_at)
 
 
 def _detail(result: StepResult) -> str:
@@ -74,3 +70,64 @@ def _detail(result: StepResult) -> str:
 
 def _truncate(text: str, limit: int = _MAX_MSG) -> str:
     return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def render_history(rows: list[dict]) -> str:
+    """Render `gauntlet history` as a fixed-width table."""
+    if not rows:
+        return "no runs recorded yet"
+    lines = [f"{'RUN':<24} {'FLOW':<20} {'STATUS':<7} {'DURATION':>9}  #FAIL"]
+    for row in rows:
+        duration = _iso_delta_s(row["started_at"], row["finished_at"])
+        lines.append(
+            f"{row['run_id']:<24} {row['flow_name']:<20} {row['status']:<7}"
+            f" {duration:>8.1f}s  {row['failed_steps']}"
+        )
+    return "\n".join(lines)
+
+
+def render_diff(diff: RunDiff) -> str:
+    """Render `gauntlet diff` with the four regression buckets."""
+    lines = [f"DIFF {diff.run_a} → {diff.run_b} (flow: {diff.flow_name})", ""]
+
+    lines.append(f"NEW FAILURES ({len(diff.new_failures)})")
+    for r in diff.new_failures:
+        lines.append(f"  {r.step_id:<18}{_failure_detail(r)}")
+    lines.append("")
+
+    lines.append(f"FIXED ({len(diff.fixed)})")
+    for r in diff.fixed:
+        lines.append(f"  {r.step_id:<18}was failing, now {r.status.value}")
+    lines.append("")
+
+    lines.append(f"STILL FAILING ({len(diff.still_failing)})")
+    for r in diff.still_failing:
+        lines.append(f"  {r.step_id:<18}{_failure_detail(r)}")
+    lines.append(f"UNCHANGED PASS ({len(diff.unchanged_pass)})")
+    if diff.new_steps:
+        lines.append(f"NEW STEPS ({len(diff.new_steps)}): {', '.join(diff.new_steps)}")
+    if diff.removed_steps:
+        lines.append(
+            f"REMOVED STEPS ({len(diff.removed_steps)}): {', '.join(diff.removed_steps)}"
+        )
+    lines.append(f"verdict: {diff.verdict_line()}")
+    return "\n".join(lines)
+
+
+def _failure_detail(result: StepResult) -> str:
+    if result.status == StepStatus.TIMEOUT:
+        return "timed out"
+    unwaived = [
+        v for v in result.violations if v.severity == "ERROR" and not v.waived
+    ]
+    if unwaived:
+        first = unwaived[0]
+        return f"[{first.rule_id}] {_truncate(first.message)}"
+    return f"exit code {result.exit_code}"
+
+
+def _iso_delta_s(start: str, end: str) -> float:
+    try:
+        return (datetime.fromisoformat(end) - datetime.fromisoformat(start)).total_seconds()
+    except (ValueError, TypeError):
+        return 0.0
