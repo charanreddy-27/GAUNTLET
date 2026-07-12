@@ -82,6 +82,7 @@ def test_store_round_trip(tmp_path):
         Violation("SIM-ERR-007", "ERROR", 9, "fifo overflow in u_fifo_rx",
                   waived=True, waive_reason="Known TB artifact")
     )
+    record.results["sim"].flaky = True  # exercise flaky persistence too
     store = RunStore(tmp_path / "g.db")
     store.save(record)
     loaded = store.load("run_x")

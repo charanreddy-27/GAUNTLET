@@ -88,7 +88,7 @@ extra ERROR and exits 1.
 |---|---|---|
 | `gauntlet run <flow.yaml> [--workers N] [--keep-going]` | execute a flow | 0 all PASS/WAIVED · 1 any FAIL/TIMEOUT · 2 config error |
 | `gauntlet history [-n 10]` | recent runs from SQLite | 0 |
-| `gauntlet report <run_id>` | re-render a stored run | 0 · 2 unknown run |
+| `gauntlet report <run_id> [--html out.html]` | re-render a stored run (optionally as a single-file HTML page) | 0 · 2 unknown run |
 | `gauntlet diff <run_a> <run_b>` | run-to-run regression delta | 0 · 1 new failures · 2 unknown run |
 
 ## Design Notes
@@ -117,8 +117,22 @@ extra ERROR and exits 1.
 - **Schema deviation:** the `violations` table adds a `waive_reason` column
   beyond the spec's minimum so `gauntlet report <run_id>` can reproduce the
   full report (including waiver reasons) from the DB alone.
-- Scope guards honored: no plugins, no asyncio, no web UI, no retries
-  framework. Built strictly Phase 1 → 4; Phase 5 stretch items untouched.
+- Scope guards honored: no plugins, no asyncio, no web UI, no config
+  server. Built strictly Phase 1 → 4 first; the Phase 5 stretch items
+  below were added only after the core was demo-complete.
+
+## Stretch features (Phase 5)
+
+- **HTML report** — `gauntlet report <run_id> --html out.html` writes one
+  self-contained page (stdlib `string.Template`, zero new deps) with the
+  step summary, per-step `output.log` links, and violation tables.
+- **CI workflow** — `.github/workflows/gauntlet.yml` installs the package,
+  runs the test suite and the seeded smoke flow, and uploads `runs/` as a
+  build artifact (`if: always()`, so failing runs keep their evidence).
+- **Per-step retries** — `retries: N` on a step in the flow YAML gives it
+  N naive immediate re-attempts. A step that only passes on a retry gets
+  `flaky=True`: it satisfies its dependents, but every report shows
+  `(flaky: passed on retry)` — a flaky pass is information, not a pass.
 
 ## Layout
 

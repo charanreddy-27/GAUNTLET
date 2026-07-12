@@ -36,6 +36,7 @@ class StepSpec:
     depends_on: tuple[str, ...] = ()
     rulepack: str | None = None
     timeout_s: int = 60
+    retries: int = 0         # extra immediate attempts on failure
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,7 @@ class StepResult:
     duration_s: float
     log_path: str
     violations: list[Violation] = field(default_factory=list)
+    flaky: bool = False      # passed, but only after at least one retry
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -85,6 +87,7 @@ class StepResult:
             duration_s=d["duration_s"],
             log_path=d["log_path"],
             violations=violations,
+            flaky=d.get("flaky", False),
         )
 
 

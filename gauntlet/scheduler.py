@@ -106,7 +106,16 @@ class Scheduler:
         return results
 
     def _run_step(self, spec: StepSpec, run_dir: Path) -> StepResult:
-        result = self._step_factory(spec).run(run_dir)
-        if self._evaluator is not None:
-            result = self._evaluator.evaluate(spec, result)
+        """Run (and evaluate) one step, with naive immediate retries.
+
+        A step that only passes on a retry is marked flaky=True — it still
+        satisfies its dependents, but the wobble stays visible.
+        """
+        for attempt in range(spec.retries + 1):
+            result = self._step_factory(spec).run(run_dir)
+            if self._evaluator is not None:
+                result = self._evaluator.evaluate(spec, result)
+            if result.status in PASSING_STATUSES:
+                result.flaky = attempt > 0
+                return result
         return result

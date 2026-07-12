@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS runs(
   finished_at TEXT, status TEXT);
 CREATE TABLE IF NOT EXISTS step_results(
   run_id TEXT, step_id TEXT, status TEXT, exit_code INT,
-  duration_s REAL, log_path TEXT, PRIMARY KEY(run_id, step_id));
+  duration_s REAL, log_path TEXT, flaky INT DEFAULT 0,
+  PRIMARY KEY(run_id, step_id));
 CREATE TABLE IF NOT EXISTS violations(
   run_id TEXT, step_id TEXT, rule_id TEXT, severity TEXT,
   line_no INT, message TEXT, waived INT, waive_reason TEXT);
@@ -60,7 +61,7 @@ class RunStore:
             )
             for result in record.results.values():
                 self._conn.execute(
-                    "INSERT INTO step_results VALUES (?,?,?,?,?,?)",
+                    "INSERT INTO step_results VALUES (?,?,?,?,?,?,?)",
                     (
                         record.run_id,
                         result.step_id,
@@ -68,6 +69,7 @@ class RunStore:
                         result.exit_code,
                         result.duration_s,
                         result.log_path,
+                        int(result.flaky),
                     ),
                 )
                 for v in result.violations:
@@ -97,7 +99,7 @@ class RunStore:
 
         results: dict[str, StepResult] = {}
         for srow in self._conn.execute(
-            "SELECT step_id, status, exit_code, duration_s, log_path"
+            "SELECT step_id, status, exit_code, duration_s, log_path, flaky"
             " FROM step_results WHERE run_id=? ORDER BY step_id",
             (run_id,),
         ):
@@ -107,6 +109,7 @@ class RunStore:
                 exit_code=srow[2],
                 duration_s=srow[3],
                 log_path=srow[4],
+                flaky=bool(srow[5]),
             )
         for vrow in self._conn.execute(
             "SELECT step_id, rule_id, severity, line_no, message, waived,"

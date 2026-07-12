@@ -47,6 +47,9 @@ def main(argv: list[str] | None = None) -> int:
 
     p_report = sub.add_parser("report", help="re-render a stored run's report")
     p_report.add_argument("run_id")
+    p_report.add_argument(
+        "--html", metavar="PATH", help="also write a single-file HTML report"
+    )
 
     p_diff = sub.add_parser("diff", help="compare two runs (exit 1 on new failures)")
     p_diff.add_argument("run_a")
@@ -128,6 +131,11 @@ def cmd_report(args: argparse.Namespace) -> int:
     finally:
         store.close()
     print(render_run(record))
+    if args.html:
+        from .html_report import render_html
+
+        Path(args.html).write_text(render_html(record))
+        print(f"\nhtml report written: {args.html}")
     return 0
 
 

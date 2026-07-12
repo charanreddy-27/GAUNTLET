@@ -23,8 +23,9 @@ def render_run(record: RunRecord) -> str:
         total_errors += len(errors)
         total_waived += sum(1 for v in errors if v.waived)
         total_warnings += sum(1 for v in result.violations if v.severity == "WARNING")
+        flaky = " (flaky: passed on retry)" if result.flaky else ""
         lines.append(
-            f"  {result.status.value:<8} {result.step_id:<18}{_detail(result)}"
+            f"  {result.status.value:<8} {result.step_id:<18}{_detail(result)}{flaky}"
         )
     lines.append(
         f"  totals: {counts[StepStatus.PASS]} pass, {counts[StepStatus.WAIVED]} waived,"

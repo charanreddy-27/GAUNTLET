@@ -57,6 +57,7 @@ def build_flow(data: dict, source: str = "<memory>") -> FlowSpec:
                 depends_on=tuple(str(d) for d in deps),
                 rulepack=raw.get("rulepack"),
                 timeout_s=int(raw.get("timeout_s", default_timeout)),
+                retries=int(raw.get("retries", 0)),
             )
         )
 
