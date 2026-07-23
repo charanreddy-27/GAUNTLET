@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAUNTLET — every commit runs the gauntlet</title>
+<meta name="description" content="A miniature IP-regression platform: a DAG flow runner, EDA-style log parsing, waivers, and run-to-run diff — in pure Python. Every commit runs the gauntlet.">
+<meta name="author" content="Chanda Charan Reddy">
+<meta name="theme-color" content="#070b14">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="GAUNTLET — every commit runs the gauntlet">
+<meta property="og:description" content="A miniature IP-regression platform in pure Python: DAG flow runner, EDA-style log parsing, waivers, and run-to-run diff.">
+<meta property="og:image" content="og.png">
+<meta property="og:url" content="https://charanreddy.dev">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GAUNTLET — every commit runs the gauntlet">
+<meta name="twitter:description" content="A miniature IP-regression platform in pure Python: DAG flow runner, EDA log parsing, waivers, run-to-run diff.">
+<meta name="twitter:image" content="og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================ NAV -->
+<nav class="nav" id="nav" aria-label="Primary">
+  <a class="brand" href="index.html" aria-label="GAUNTLET home">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1120"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22c55e" stroke-opacity="0.4" stroke-width="1.5"/><path d="M16 24 L26 32 L16 40" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="37" width="18" height="5" rx="2.5" fill="#e8edf6"/></svg>
+    GAUNTLET
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" aria-current="page">Overview</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#features">Features</a>
+    <a href="project.html">The project</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn-primary" href="https://github.com/charanreddy-27" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
+      GitHub
+    </a>
+    <button class="icon-btn nav-toggle" id="navToggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- =========================================================== HERO -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="badge-row">
+        <span class="pill"><span class="dot"></span>Pure Python 3.10+ · one dependency</span>
+        <span class="pill">36+ tests · fully offline</span>
+      </div>
+      <h1>Every commit runs<br><span class="grad">the gauntlet.</span></h1>
+      <p class="hero-tag">// a miniature IP-regression platform</p>
+      <p class="hero-lead">
+        A DAG flow runner, EDA-style log parsing, waivers, and run-to-run diff —
+        the core loop of a chip-design regression product, rebuilt small enough
+        to read in an afternoon and honest enough to trust in CI.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#how">
+          See how it works
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="project.html">Read the build story</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="n">5</div><div class="l">status states, not 2</div></div>
+        <div class="stat"><div class="n">4</div><div class="l">CLI commands</div></div>
+        <div class="stat"><div class="n">~3s</div><div class="l">full test suite</div></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="terminal" aria-hidden="true">
+        <div class="term-bar">
+          <span class="term-dots"><i></i><i></i><i></i></span>
+          <span class="term-title">gauntlet — run flows/smoke.yaml</span>
+        </div>
+        <div class="term-body" id="termBody"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ========================================================== TRUST -->
+<div class="trust">
+  <div class="wrap trust-row">
+    <span class="t">Models the loop behind</span>
+    <span class="t">DAG scheduling</span>
+    <span class="t">·</span>
+    <span class="t">log-driven pass/fail</span>
+    <span class="t">·</span>
+    <span class="t">waivers as debt</span>
+    <span class="t">·</span>
+    <span class="t">regression deltas</span>
+    <span class="t">·</span>
+    <span class="t">SQLite history</span>
+  </div>
+</div>
+
+<!-- ==================================================== WHAT / PROBLEM -->
+<section id="what">
+  <div class="wrap">
+    <span class="eyebrow">The problem</span>
+    <h2 class="section-title">A green build isn't the question.<br>The <span class="text-green">delta</span> is.</h2>
+    <p class="section-lead">
+      In chip design, a nightly regression runs dozens of tools across a
+      dependency graph, each spewing gigabyte logs where a tool can exit
+      <code>0</code> and still have failed. What a team actually needs to know
+      isn't "did tonight pass" — it's <strong class="text-strong">what broke that
+      was working yesterday.</strong> GAUNTLET rebuilds that loop end to end.
+    </p>
+
+    <div class="feature-grid notes-intro" style="margin-top:40px">
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></div>
+        <h3>Logs are the truth</h3>
+        <p>A tool exits 0 but its log holds an unwaived <code>ERROR</code> → the step still <span class="st st-fail">FAILs</span>. Exit codes under-report; the log is the source of record.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <h3>Waivers are debt, not a fix</h3>
+        <p>A known failure becomes <span class="st st-waived">WAIVED</span> — never silently green. It stays visible in every report with an owner and a JIRA reason.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg></div>
+        <h3>The diff is the product</h3>
+        <p>Run-to-run, GAUNTLET reports <span class="st st-fail">NEW FAILURES</span>, FIXED, and STILL FAILING — and exits non-zero on regressions, so CI can gate on it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================== HOW IT WORKS -->
+<section id="how" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <span class="eyebrow">How it works</span>
+    <h2 class="section-title">One flow. A dependency graph.<br>Real subprocesses.</h2>
+    <p class="section-lead">
+      A flow is a YAML DAG. The scheduler submits a step only when every
+      dependency has passed, runs it as a real subprocess in its own process
+      group, then parses the log against a rulepack and applies waivers. Here's
+      the smoke flow — lint gates two sims that run in parallel, then synth.
+    </p>
+
+    <div class="pipe">
+      <div class="node reveal">
+        <div class="n-top"><span class="n-id">lint_rtl</span><span class="badge b-pass">PASS</span></div>
+        <div class="n-tool">mock_lint · rulepack: lint</div>
+        <div class="n-dep">entry step · 4 warnings</div>
+      </div>
+      <div class="node reveal">
+        <div class="n-top"><span class="n-id">sim_unit</span><span class="badge b-waived">WAIVED</span></div>
+        <div class="n-tool">mock_sim · rulepack: sim</div>
+        <div class="n-dep">depends_on: lint_rtl</div>
+      </div>
+      <div class="node reveal">
+        <div class="n-top"><span class="n-id">sim_integration</span><span class="badge b-pass">PASS</span></div>
+        <div class="n-tool">mock_sim · rulepack: sim</div>
+        <div class="n-dep">depends_on: lint_rtl</div>
+      </div>
+      <div class="node reveal">
+        <div class="n-top"><span class="n-id">synth_quick</span><span class="badge b-pass">PASS</span></div>
+        <div class="n-tool">mock_synth · rulepack: synth</div>
+        <div class="n-dep">depends_on: both sims</div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note reveal">
+        <h4>Threads, not asyncio</h4>
+        <p>Workers spend their lives blocked in <code>subprocess.wait()</code>, where the GIL is released — a <code>ThreadPoolExecutor</code> gives real parallelism with none of the ceremony.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Timeouts kill the whole tree</h4>
+        <p>Steps launch in their own process group. On timeout we signal the group, grace it, then hard-kill — so a shell wrapper can't die while its simulator lives on.</p>
+      </div>
+      <div class="note reveal">
+        <h4>SKIPPED isn't a failure</h4>
+        <p>When a dependency fails, dependents go <span class="st st-skipped">SKIPPED</span> — and the diff blames the upstream step that actually broke, not the ones it starved.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Streamed, never slurped</h4>
+        <p>Logs are classified line by line against compiled regex rulepacks. Real EDA logs run to gigabytes; reading one whole is how you fall over in production.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== THE MONEY SHOT -->
+<section id="diff">
+  <div class="wrap">
+    <span class="eyebrow">The money shot</span>
+    <h2 class="section-title">Introduce a flake. Run again.<br>Watch the <span class="text-green">delta</span> surface.</h2>
+    <p class="section-lead">
+      Same seed, same flow — but a flake injects an overflow in <code>u_fifo_tx</code>.
+      The waiver only matches <code>u_fifo_rx</code>, so it doesn't fire: the step
+      <span class="st st-fail">FAILs</span>. GAUNTLET doesn't just report the new run —
+      it reports what <em>changed</em>.
+    </p>
+
+    <div class="moneyshot">
+      <div class="run-card reveal">
+        <div class="run-head">
+          <span class="rc-title">run_…d84a &nbsp;<span class="dim" style="color:var(--muted)">SEED=7</span></span>
+          <span class="verdict v-pass">PASS · 7.0s</span>
+        </div>
+        <table class="run-table">
+          <tr><td class="tstatus"><span class="st st-pass">PASS</span></td><td class="tstep">lint_rtl</td><td class="tnote">4 warnings</td></tr>
+          <tr><td class="tstatus"><span class="st st-waived">WAIVED</span></td><td class="tstep">sim_unit</td><td class="tnote">1 error waived</td></tr>
+          <tr><td class="tstatus"><span class="st st-pass">PASS</span></td><td class="tstep">sim_integration</td><td class="tnote">1 warning</td></tr>
+          <tr><td class="tstatus"><span class="st st-pass">PASS</span></td><td class="tstep">synth_quick</td><td class="tnote">clean</td></tr>
+        </table>
+      </div>
+
+      <div class="run-card reveal">
+        <div class="run-head">
+          <span class="rc-title">run_…8a0b &nbsp;<span class="dim" style="color:var(--muted)">SEED=7 FLAKE=0.3</span></span>
+          <span class="verdict v-fail">FAIL · 5.0s</span>
+        </div>
+        <table class="run-table">
+          <tr><td class="tstatus"><span class="st st-pass">PASS</span></td><td class="tstep">lint_rtl</td><td class="tnote">4 warnings</td></tr>
+          <tr><td class="tstatus"><span class="st st-fail">FAIL</span></td><td class="tstep">sim_unit</td><td class="tnote">SIM-ERR-007 · u_fifo_tx</td></tr>
+          <tr><td class="tstatus"><span class="st st-pass">PASS</span></td><td class="tstep">sim_integration</td><td class="tnote">1 warning</td></tr>
+          <tr><td class="tstatus"><span class="st st-skipped">SKIPPED</span></td><td class="tstep">synth_quick</td><td class="tnote">upstream failure</td></tr>
+        </table>
+      </div>
+
+      <div class="diff-banner reveal">
+        <div class="db-left">
+          <span class="db-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>
+          <div>
+            <h4><code>gauntlet diff</code> → NEW FAILURES (1): <code>sim_unit</code></h4>
+            <p>verdict: <strong style="color:var(--red)">REGRESSION</strong> — 1 new failure the previous run didn't have.</p>
+          </div>
+        </div>
+        <div class="diff-exit">exit code <b>1</b> → CI gate trips</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= FEATURES -->
+<section id="features" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <span class="eyebrow">What's in the box</span>
+    <h2 class="section-title">Small surface. Real infrastructure behaviors.</h2>
+    <p class="section-lead">No plugins, no async, no web server in the core — just the behaviors a regression platform actually needs, each one deliberate.</p>
+
+    <div class="feature-grid">
+      <div class="card span-2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h6a4 4 0 0 1 4 4M7 18h6a4 4 0 0 0 4-4"/></svg></div>
+        <h3>DAG scheduler with a ready-set executor</h3>
+        <p>A step is submitted only when every dependency is PASS or WAIVED. Failures cascade SKIPPED transitively; <code>--keep-going</code> lets independent branches finish. Ordering is proven by tests, not vibes.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h10v4H4z"/></svg></div>
+        <h3>Rulepacks</h3>
+        <p>Per-tool regex rulepacks compile once at load. A bad pattern is a config error at startup — exit 2 — never a surprise mid-run.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>Waivers with an audit trail</h3>
+        <p>rule-id + substring match, each carrying an owner and reason. Precise, not blanket — the same rule with a different signature still fails.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
+        <h3>SQLite memory</h3>
+        <p><code>history</code>, <code>report</code>, and <code>diff</code> all work from the DB alone — long after the raw logs are cleaned up.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div>
+        <h3>Shareable HTML reports</h3>
+        <p><code>report &lt;run&gt; --html</code> writes one self-contained page — step summary, per-step log links, violation tables — with zero new dependencies.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg></div>
+        <h3>Retries that stay honest</h3>
+        <p>A step that only passes on retry is marked <em>flaky</em>: it satisfies its dependents, but every report says so. A flaky pass is information, not a pass.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================== QUICKSTART -->
+<section id="quickstart">
+  <div class="wrap">
+    <span class="eyebrow">Run it yourself</span>
+    <h2 class="section-title">Three commands to the money shot.</h2>
+    <p class="section-lead">Clone it, install the one dependency, and watch a clean run, a regression, and the diff that catches it.</p>
+
+    <div class="install">
+      <div class="il">
+        <span class="txt"><span class="p">$</span> <span class="c">pip install -e ".[dev]" &amp;&amp; pytest</span></span>
+        <button class="copy-btn" type="button" data-copy='pip install -e ".[dev]" && pytest'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
+      </div>
+      <div class="il">
+        <span class="txt"><span class="p">$</span> <span class="c">GAUNTLET_SEED=7 gauntlet run flows/smoke.yaml --workers 4</span></span>
+        <button class="copy-btn" type="button" data-copy="GAUNTLET_SEED=7 gauntlet run flows/smoke.yaml --workers 4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
+      </div>
+      <div class="il">
+        <span class="txt"><span class="p">$</span> <span class="c">gauntlet diff &lt;run_1&gt; &lt;run_2&gt;&nbsp;&nbsp;<span style="color:var(--muted)"># exits 1 → CI-usable</span></span></span>
+        <button class="copy-btn" type="button" data-copy="gauntlet diff <run_1> <run_2>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= CTA -->
+<section id="cta">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <span class="eyebrow" style="justify-content:center">Have an idea? Let's talk.</span>
+      <h2>Want to build something —<br>or break something interesting?</h2>
+      <p>GAUNTLET is one project. There are 18 more (and a few jet engines) over at charanreddy.dev. If you're hiring, collaborating, or just curious how the diff works — the door's open.</p>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href="https://cal.com/charanreddy-27/30min" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Book a call
+        </a>
+        <a class="btn btn-ghost" href="about.html">More about me</a>
+        <a class="btn btn-ghost" href="https://www.charanreddy.dev" target="_blank" rel="noopener">Portfolio</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================== FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1120"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22c55e" stroke-opacity="0.4" stroke-width="1.5"/><path d="M16 24 L26 32 L16 40" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="37" width="18" height="5" rx="2.5" fill="#e8edf6"/></svg>
+          GAUNTLET
+        </a>
+        <p class="f-tag">Every commit runs the gauntlet. A study in the infrastructure behind chip-design regression — built to be read.</p>
+      </div>
+      <div class="f-cols">
+        <div class="f-col">
+          <h5>Project</h5>
+          <a href="index.html#how">How it works</a>
+          <a href="index.html#features">Features</a>
+          <a href="project.html">The build story</a>
+          <a href="https://github.com/charanreddy-27" target="_blank" rel="noopener">Source ↗</a>
+        </div>
+        <div class="f-col">
+          <h5>Charan</h5>
+          <a href="about.html">About me</a>
+          <a href="https://www.charanreddy.dev" target="_blank" rel="noopener">Portfolio ↗</a>
+          <a href="https://www.linkedin.com/in/chandacharanreddy/" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a href="https://cal.com/charanreddy-27/30min" target="_blank" rel="noopener">Book a call ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-base">
+      <span>Crafted with intent · © 2026 Chanda Charan Reddy</span>
+      <span class="avail"><span class="dot"></span>Available for new projects</span>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

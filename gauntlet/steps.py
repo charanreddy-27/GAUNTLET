@@ -15,6 +15,18 @@ from pathlib import Path
 
 from .models import StepResult, StepSpec, StepStatus
 
+IS_WINDOWS = os.name == "nt"
+
+# Put the child in its own process group so a timeout kill takes down the
+# whole tree, not just the shell wrapper. POSIX gets a new session; Windows
+# gets a new process group (the closest thing it has, and the only way to
+# deliver CTRL_BREAK_EVENT to a child).
+_GROUP_KWARGS = (
+    {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    if IS_WINDOWS
+    else {"start_new_session": True}
+)
+
 
 class Step(ABC):
     """A unit of executable work in a flow. Subclasses define HOW to run;
@@ -31,7 +43,7 @@ class Step(ABC):
 class ShellStep(Step):
     """Runs spec.cmd as a subprocess in its own process group, captures
     stdout+stderr to <run_dir>/<step_id>/output.log, and enforces timeout
-    with SIGTERM -> grace period -> SIGKILL on the whole process group."""
+    with a polite signal -> grace period -> hard kill on the whole group."""
 
     GRACE_S = 3.0
 
@@ -42,14 +54,12 @@ class ShellStep(Step):
 
         start = time.monotonic()
         with open(log_path, "wb") as log:
-            # start_new_session=True puts the child in its own process group,
-            # so a timeout kill takes down the whole tree, not just the shell.
             proc = subprocess.Popen(
                 self.spec.cmd,
                 shell=True,
                 stdout=log,
                 stderr=subprocess.STDOUT,
-                start_new_session=True,
+                **_GROUP_KWARGS,
             )
             try:
                 exit_code: int | None = proc.wait(timeout=self.spec.timeout_s)
@@ -68,7 +78,14 @@ class ShellStep(Step):
         )
 
     def _kill_process_group(self, proc: subprocess.Popen) -> None:
-        """SIGTERM the group, give it GRACE_S to clean up, then SIGKILL."""
+        """Signal the group, give it GRACE_S to clean up, then kill it hard."""
+        if IS_WINDOWS:
+            self._kill_windows(proc)
+        else:
+            self._kill_posix(proc)
+
+    def _kill_posix(self, proc: subprocess.Popen) -> None:
+        """SIGTERM the process group, wait GRACE_S, then SIGKILL it."""
         try:
             pgid = os.getpgid(proc.pid)
         except ProcessLookupError:
@@ -85,3 +102,25 @@ class ShellStep(Step):
             except ProcessLookupError:
                 pass
             proc.wait()
+
+    def _kill_windows(self, proc: subprocess.Popen) -> None:
+        """CTRL_BREAK the group, wait GRACE_S, then `taskkill /T /F` the tree.
+
+        Windows has no SIGTERM. CTRL_BREAK_EVENT is the closest polite
+        equivalent (a console app gets a chance to unwind); it needs a
+        console, so a headless parent falls straight through to taskkill,
+        which is the only call that reliably reaps grandchildren.
+        """
+        try:
+            os.kill(proc.pid, signal.CTRL_BREAK_EVENT)
+            proc.wait(timeout=self.GRACE_S)
+            return
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        subprocess.run(
+            ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        proc.wait()

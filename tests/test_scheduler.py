@@ -1,6 +1,11 @@
-"""Scheduler behavior: ordering, skip cascades, timeouts, keep-going."""
+"""Scheduler behavior: ordering, skip cascades, timeouts, keep-going.
+
+Commands run through tests/probe.py (see conftest) instead of coreutils, so
+the suite behaves identically on Linux, macOS and Windows.
+"""
 import time
 
+from probe import cmd
 from gauntlet.models import FlowSpec, StepSpec, StepStatus
 from gauntlet.scheduler import Scheduler
 
@@ -13,9 +18,9 @@ def _run(steps, tmp_path, **kw):
 def test_dependency_order_respected(tmp_path):
     marker = tmp_path / "a_done"
     steps = [
-        StepSpec(id="a", cmd=f"touch {marker}"),
+        StepSpec(id="a", cmd=cmd("touch", marker)),
         # b only passes if a's marker already exists -> proves ordering
-        StepSpec(id="b", cmd=f"test -f {marker}", depends_on=("a",)),
+        StepSpec(id="b", cmd=cmd("exists", marker), depends_on=("a",)),
     ]
     results = _run(steps, tmp_path, max_workers=4)
     assert results["a"].status == StepStatus.PASS
@@ -24,8 +29,8 @@ def test_dependency_order_respected(tmp_path):
 
 def test_independent_steps_run_in_parallel(tmp_path):
     steps = [
-        StepSpec(id="s1", cmd="sleep 0.6"),
-        StepSpec(id="s2", cmd="sleep 0.6"),
+        StepSpec(id="s1", cmd=cmd("sleep", 0.6)),
+        StepSpec(id="s2", cmd=cmd("sleep", 0.6)),
     ]
     start = time.monotonic()
     results = _run(steps, tmp_path, max_workers=2)
@@ -36,9 +41,9 @@ def test_independent_steps_run_in_parallel(tmp_path):
 
 def test_failed_dep_skips_dependents_transitively(tmp_path):
     steps = [
-        StepSpec(id="bad", cmd="false"),
-        StepSpec(id="child", cmd="true", depends_on=("bad",)),
-        StepSpec(id="grandchild", cmd="true", depends_on=("child",)),
+        StepSpec(id="bad", cmd=cmd("fail")),
+        StepSpec(id="child", cmd=cmd("ok"), depends_on=("bad",)),
+        StepSpec(id="grandchild", cmd=cmd("ok"), depends_on=("child",)),
     ]
     results = _run(steps, tmp_path)
     assert results["bad"].status == StepStatus.FAIL
@@ -48,12 +53,12 @@ def test_failed_dep_skips_dependents_transitively(tmp_path):
 
 def test_timeout_marks_timeout_and_skips_dependents(tmp_path):
     steps = [
-        StepSpec(id="slow", cmd="sleep 999", timeout_s=1),
-        StepSpec(id="after", cmd="true", depends_on=("slow",)),
+        StepSpec(id="slow", cmd=cmd("sleep", 999), timeout_s=1),
+        StepSpec(id="after", cmd=cmd("ok"), depends_on=("slow",)),
     ]
     start = time.monotonic()
     results = _run(steps, tmp_path)
-    assert time.monotonic() - start < 3  # SIGTERM ends it well before 999s
+    assert time.monotonic() - start < 8  # killed well before 999s
     assert results["slow"].status == StepStatus.TIMEOUT
     assert results["slow"].exit_code is None
     assert results["after"].status == StepStatus.SKIPPED
@@ -61,10 +66,10 @@ def test_timeout_marks_timeout_and_skips_dependents(tmp_path):
 
 def test_default_stops_new_work_after_failure(tmp_path):
     steps = [
-        StepSpec(id="bad", cmd="false"),
+        StepSpec(id="bad", cmd=cmd("fail")),
         # gate only becomes ready after bad fails -> must not be submitted
-        StepSpec(id="slow", cmd="sleep 0.3"),
-        StepSpec(id="gate", cmd="true", depends_on=("slow",)),
+        StepSpec(id="slow", cmd=cmd("sleep", 0.3)),
+        StepSpec(id="gate", cmd=cmd("ok"), depends_on=("slow",)),
     ]
     results = _run(steps, tmp_path, max_workers=1)
     assert results["bad"].status == StepStatus.FAIL
@@ -73,9 +78,9 @@ def test_default_stops_new_work_after_failure(tmp_path):
 
 def test_keep_going_runs_independent_branches(tmp_path):
     steps = [
-        StepSpec(id="bad", cmd="false"),
-        StepSpec(id="slow", cmd="sleep 0.3"),
-        StepSpec(id="gate", cmd="true", depends_on=("slow",)),
+        StepSpec(id="bad", cmd=cmd("fail")),
+        StepSpec(id="slow", cmd=cmd("sleep", 0.3)),
+        StepSpec(id="gate", cmd=cmd("ok"), depends_on=("slow",)),
     ]
     results = _run(steps, tmp_path, max_workers=1, keep_going=True)
     assert results["bad"].status == StepStatus.FAIL
@@ -84,7 +89,7 @@ def test_keep_going_runs_independent_branches(tmp_path):
 
 
 def test_logs_written_to_run_dir(tmp_path):
-    steps = [StepSpec(id="hello", cmd="echo hi there")]
+    steps = [StepSpec(id="hello", cmd=cmd("echo", "hi", "there"))]
     results = _run(steps, tmp_path)
     log = tmp_path / "hello" / "output.log"
     assert log.read_text().strip() == "hi there"

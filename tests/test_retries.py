@@ -1,4 +1,9 @@
-"""Phase 5 stretch: per-step naive immediate retries + flaky marking."""
+"""Phase 5 stretch: per-step naive immediate retries + flaky marking.
+
+Commands run through tests/probe.py (see conftest) so retry timing and exit
+codes are identical across operating systems.
+"""
+from probe import cmd
 from gauntlet.flow import build_flow
 from gauntlet.models import FlowSpec, StepSpec, StepStatus
 from gauntlet.scheduler import Scheduler
@@ -10,9 +15,8 @@ def _run(steps, tmp_path, **kw):
 
 
 def _fail_once_cmd(tmp_path):
-    # First attempt creates the marker and fails; second attempt passes.
-    marker = tmp_path / "marker"
-    return f"test -f {marker} || {{ touch {marker}; exit 1; }}"
+    # First attempt creates the marker and fails; every later attempt passes.
+    return cmd("fail-once", tmp_path / "marker")
 
 
 def test_retry_turns_failure_into_flaky_pass(tmp_path):
@@ -25,21 +29,21 @@ def test_retry_turns_failure_into_flaky_pass(tmp_path):
 def test_flaky_pass_still_satisfies_dependents(tmp_path):
     steps = [
         StepSpec(id="wobbly", cmd=_fail_once_cmd(tmp_path), retries=1),
-        StepSpec(id="child", cmd="true", depends_on=("wobbly",)),
+        StepSpec(id="child", cmd=cmd("ok"), depends_on=("wobbly",)),
     ]
     results = _run(steps, tmp_path)
     assert results["child"].status == StepStatus.PASS
 
 
 def test_exhausted_retries_fail_and_are_not_flaky(tmp_path):
-    steps = [StepSpec(id="doomed", cmd="false", retries=2)]
+    steps = [StepSpec(id="doomed", cmd=cmd("fail"), retries=2)]
     results = _run(steps, tmp_path)
     assert results["doomed"].status == StepStatus.FAIL
     assert results["doomed"].flaky is False
 
 
 def test_clean_pass_is_not_flaky(tmp_path):
-    steps = [StepSpec(id="solid", cmd="true", retries=3)]
+    steps = [StepSpec(id="solid", cmd=cmd("ok"), retries=3)]
     results = _run(steps, tmp_path)
     assert results["solid"].status == StepStatus.PASS
     assert results["solid"].flaky is False

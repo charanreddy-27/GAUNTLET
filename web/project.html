@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAUNTLET — the build story</title>
+<meta name="description" content="Why GAUNTLET exists, how it was built in a focused two-day sprint, the interesting technical decisions, and the tech stack behind a miniature IP-regression platform.">
+<meta name="author" content="Chanda Charan Reddy">
+<meta name="theme-color" content="#070b14">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="GAUNTLET — the build story">
+<meta property="og:description" content="Why GAUNTLET exists, the build timeline, the hard technical decisions, and the stack.">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GAUNTLET — the build story">
+<meta name="twitter:description" content="Why GAUNTLET exists, the timeline, the hard decisions, and the stack.">
+<meta name="twitter:image" content="og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav" id="nav" aria-label="Primary">
+  <a class="brand" href="index.html" aria-label="GAUNTLET home">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1120"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22c55e" stroke-opacity="0.4" stroke-width="1.5"/><path d="M16 24 L26 32 L16 40" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="37" width="18" height="5" rx="2.5" fill="#e8edf6"/></svg>
+    GAUNTLET
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">Overview</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#features">Features</a>
+    <a href="project.html" aria-current="page">The project</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn-primary" href="https://github.com/charanreddy-27" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
+      GitHub
+    </a>
+    <button class="icon-btn nav-toggle" id="navToggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ===================================================== PAGE HERO -->
+<header class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">The build story</span>
+    <h1 style="font-size:clamp(2.1rem,5vw,3.4rem)">A regression platform,<br>small enough to <span class="text-green">read.</span></h1>
+    <p class="lede">
+      GAUNTLET started as a question: what does the infrastructure behind a
+      chip-design regression product actually <em>do</em> — and could I rebuild
+      the core loop from scratch, honestly, in a weekend? This is what came out.
+    </p>
+  </div>
+</header>
+
+<!-- ========================================================= WHY -->
+<section style="padding-top:20px">
+  <div class="wrap">
+    <span class="eyebrow">The why</span>
+    <h2 class="section-title">I wanted to understand the boring part.</h2>
+    <div class="prose reveal" style="max-width:70ch;margin-top:18px">
+      <p>
+        Everyone can build the demo. The thing I kept bumping into — reading
+        about EDA flows, design-verification pipelines, the tooling teams live
+        inside — was that the <strong>interesting engineering isn't in any single
+        tool.</strong> It's in the boring connective tissue: the thing that runs
+        forty tools in the right order, decides what "failed" even means when a
+        tool lies about its exit code, tracks which failures are known debt, and
+        tells you what changed since last night.
+      </p>
+      <p>
+        That connective tissue is a whole product category, and it's mostly
+        invisible. So I rebuilt a miniature of it end to end — real subprocesses,
+        real signals, real exit codes, logs as files on disk — with a hard rule:
+        <strong>no faking the hard parts.</strong> If real EDA tools under-report
+        via exit codes, mine had to too. If real logs are gigabytes, mine had to
+        stream. The point wasn't to ship a product; it was to earn the intuition.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================== TIMELINE -->
+<section style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <span class="eyebrow">How it came together</span>
+    <h2 class="section-title">A focused two-day sprint.</h2>
+    <p class="section-lead">Scoped tight on purpose. Built strictly in phases — core first, stretch features only after the demo was already complete.</p>
+
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date">JUL 2026 · DAY 1, MORNING — IDEATION &amp; SCOPING</div>
+        <h4>Draw the box, then draw the line around it</h4>
+        <p>Mapped the real loop — flow → run → parse → waive → diff — and, just as deliberately, wrote down the scope guards: no plugins, no asyncio, no web UI, no config server. Naming a floor <em>and</em> a ceiling before writing code is what kept the weekend a weekend.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">JUL 2026 · DAY 1, AFTERNOON — THE SPINE</div>
+        <h4>Models, flow validation, and a DAG that refuses to lie</h4>
+        <p>Frozen dataclasses as the single source of truth, then flow loading with unique-id checks, unknown-dependency detection, and a three-color DFS cycle finder. A broken flow has to fail fast — before anything executes — not halfway through a run.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">JUL 2026 · DAY 1, EVENING — MVP: IT RUNS</div>
+        <h4>Real subprocesses on a thread pool</h4>
+        <p>The ready-set scheduler and ShellStep came together: steps submitted only when dependencies pass, each running as a real process, logs streamed to disk. First end-to-end green run. This is the moment it stopped being a diagram.</p>
+      </div>
+      <div class="tl-item hard reveal">
+        <div class="tl-date">JUL 2026 · DAY 2, MORNING — THE PART THAT BROKE EVERYTHING</div>
+        <h4>Timeouts, process groups, and a child that wouldn't die</h4>
+        <p>The honest bit. A timed-out shell wrapper would exit while its child simulator kept running — a zombie eating a worker. Fixing it meant process groups, a SIGTERM → grace → SIGKILL escalation, and later making that whole dance portable to Windows. Killing a process cleanly is genuinely harder than starting one.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">JUL 2026 · DAY 2, AFTERNOON — THE ACTUAL PRODUCT</div>
+        <h4>Log parsing, waivers, and the run-to-run diff</h4>
+        <p>Rulepacks compile to regex; a tool can exit 0 and still FAIL on an unwaived ERROR; waivers turn a would-be failure into visible WAIVED debt. Then the payoff: the diff that buckets NEW FAILURES / FIXED / STILL FAILING and exits non-zero on regressions.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">JUL 2026 · DAY 2, EVENING — POLISH &amp; PROOF</div>
+        <h4>SQLite history, 36+ offline tests, seeded determinism</h4>
+        <p>Persistence so history/report/diff work from the DB alone. A deterministic mock-tool harness (<code>GAUNTLET_SEED</code> for byte-identical runs, <code>GAUNTLET_FLAKE</code> to inject regressions). A fast, fully-offline test suite — because a regression platform with a flaky test suite is a bad joke.</p>
+      </div>
+      <div class="tl-item launch reveal">
+        <div class="tl-date">JUL 2026 · STRETCH &amp; LAUNCH</div>
+        <h4>HTML reports, CI workflow, retries — and this site</h4>
+        <p>Only after the core was demo-complete: self-contained HTML reports, a GitHub Actions workflow that archives run evidence, honest flaky-pass retries — and a cross-platform test rewrite so the whole thing is green on Linux, macOS, and Windows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================= TECH DECISIONS -->
+<section>
+  <div class="wrap">
+    <span class="eyebrow">Interesting decisions</span>
+    <h2 class="section-title">Where the thinking went.</h2>
+    <div class="notes">
+      <div class="note reveal">
+        <h4>Step is an ABC, on purpose</h4>
+        <p>The scheduler's entire contract is <code>run() → StepResult</code>. ShellStep is one implementation; a future PythonStep or RemoteStep touches zero scheduler code. The abstraction earns its keep by what it lets you add later.</p>
+      </div>
+      <div class="note reveal">
+        <h4>WAIVED is a first-class status</h4>
+        <p>The tempting shortcut is to treat a waived failure as a pass. That's how debt goes invisible. Keeping WAIVED distinct — with owner and reason surfaced in every report — was a product decision disguised as an enum value.</p>
+      </div>
+      <div class="note reveal">
+        <h4>SKIPPED gives no evidence</h4>
+        <p>When an upstream step fails, its dependents are SKIPPED — and the diff deliberately doesn't count that as a new failure. A skipped step tells you nothing new about itself; blaming it would bury the real culprit.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Determinism as a test strategy</h4>
+        <p>Seeding the mock tools makes runs byte-identical, so tests assert on exact output; a separate flake knob injects regressions on demand. The test suite proves the diff catches a regression — the whole reason the thing exists.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================== TECH STACK -->
+<section style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <span class="eyebrow">Tech stack</span>
+    <h2 class="section-title">Deliberately small.</h2>
+    <p class="section-lead">One language, one dependency. Every choice below is a "why this," not a default.</p>
+
+    <div class="stack-grid">
+      <div class="stack-row reveal"><div class="s-name">Python 3.10+ <span class="tag">core</span></div><p>Batteries-included stdlib covers subprocesses, threads, signals, SQLite and regex — the exact primitives an EDA harness needs, with nothing to install.</p></div>
+      <div class="stack-row reveal"><div class="s-name">ThreadPoolExecutor <span class="tag">concurrency</span></div><p>Workers block in <code>subprocess.wait()</code> where the GIL is released, so threads give true parallelism without the cognitive tax of asyncio or multiprocessing.</p></div>
+      <div class="stack-row reveal"><div class="s-name">SQLite (stdlib) <span class="tag">storage</span></div><p>One file, three tables, no ORM, no server. It's the platform's memory — durable, queryable, zero-ops.</p></div>
+      <div class="stack-row reveal"><div class="s-name">PyYAML <span class="tag">the one dep</span></div><p>Flows, rulepacks and waivers are declarative YAML. The only third-party package in the whole project — and it earns the slot.</p></div>
+      <div class="stack-row reveal"><div class="s-name">re + string.Template <span class="tag">parsing / reports</span></div><p>Compiled-once regex rulepacks classify logs line-by-line; the HTML report is a stdlib template — a self-contained page with no build step and no new deps.</p></div>
+      <div class="stack-row reveal"><div class="s-name">pytest + GitHub Actions <span class="tag">quality</span></div><p>A fast, deterministic, fully-offline suite, run in CI on every push — with run artifacts uploaded even when a run fails, so the evidence survives.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== LINKS / CTA -->
+<section>
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <span class="eyebrow" style="justify-content:center">Dig in / reach out</span>
+      <h2>Want to build something<br>or collaborate?</h2>
+      <p>The source is on GitHub — clone it and run the money shot in three commands. If you want to talk regression infra, LLM systems, or anything in between, I'm around.</p>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href="https://github.com/charanreddy-27" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
+          View source
+        </a>
+        <a class="btn btn-ghost" href="about.html">Contact me</a>
+        <a class="btn btn-ghost" href="https://www.linkedin.com/in/chandacharanreddy/" target="_blank" rel="noopener">Read the LinkedIn post</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1120"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22c55e" stroke-opacity="0.4" stroke-width="1.5"/><path d="M16 24 L26 32 L16 40" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="37" width="18" height="5" rx="2.5" fill="#e8edf6"/></svg>
+          GAUNTLET
+        </a>
+        <p class="f-tag">Every commit runs the gauntlet. A study in the infrastructure behind chip-design regression — built to be read.</p>
+      </div>
+      <div class="f-cols">
+        <div class="f-col">
+          <h5>Project</h5>
+          <a href="index.html#how">How it works</a>
+          <a href="index.html#features">Features</a>
+          <a href="project.html">The build story</a>
+          <a href="https://github.com/charanreddy-27" target="_blank" rel="noopener">Source ↗</a>
+        </div>
+        <div class="f-col">
+          <h5>Charan</h5>
+          <a href="about.html">About me</a>
+          <a href="https://www.charanreddy.dev" target="_blank" rel="noopener">Portfolio ↗</a>
+          <a href="https://www.linkedin.com/in/chandacharanreddy/" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a href="https://cal.com/charanreddy-27/30min" target="_blank" rel="noopener">Book a call ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-base">
+      <span>Crafted with intent · © 2026 Chanda Charan Reddy</span>
+      <span class="avail"><span class="dot"></span>Available for new projects</span>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

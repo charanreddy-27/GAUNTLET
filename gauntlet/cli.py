@@ -134,7 +134,7 @@ def cmd_report(args: argparse.Namespace) -> int:
     if args.html:
         from .html_report import render_html
 
-        Path(args.html).write_text(render_html(record))
+        Path(args.html).write_text(render_html(record), encoding="utf-8")
         print(f"\nhtml report written: {args.html}")
     return 0
 
