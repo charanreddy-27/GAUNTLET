@@ -5,14 +5,9 @@
   var root = document.documentElement;
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------------------------------------------------------- theme */
-  var stored = null;
-  try { stored = localStorage.getItem("gauntlet-theme"); } catch (e) {}
-  if (stored) {
-    root.setAttribute("data-theme", stored);
-  } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-    root.setAttribute("data-theme", "light");
-  }
+  /* ---------------------------------------------------------- theme
+     The initial theme is resolved by the inline bootstrap in <head> so
+     there is no flash before first paint; here we only handle toggling. */
   var themeToggle = document.getElementById("themeToggle");
   if (themeToggle) {
     themeToggle.addEventListener("click", function () {
@@ -65,12 +60,16 @@
 
   /* --------------------------------------------- copy-to-clipboard */
   document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    // Captured once, before any click: re-reading innerHTML inside the
+    // handler would latch "copied ✓" as the label on a rapid second click.
+    var original = btn.innerHTML;
+    var resetTimer = null;
     btn.addEventListener("click", function () {
       var text = btn.getAttribute("data-copy") || "";
       var done = function () {
-        var original = btn.innerHTML;
         btn.textContent = "copied ✓";
-        setTimeout(function () { btn.innerHTML = original; }, 1400);
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(function () { btn.innerHTML = original; }, 1400);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done).catch(done);
@@ -150,7 +149,7 @@
       }
       var subject = encodeURIComponent("GAUNTLET — hello from " + name);
       var body = encodeURIComponent(message + "\n\n— " + name + " (" + email + ")");
-      window.location.href = "mailto:charanreddychanda@gmail.com?subject=" + subject + "&body=" + body;
+      window.location.href = "mailto:charanreddychanda27@gmail.com?subject=" + subject + "&body=" + body;
       if (status) { status.textContent = "Opening your mail client…"; status.className = "form-status ok"; }
     });
   }

@@ -1,0 +1,18 @@
+# Only web/ ships to Vercel. Everything below is the Python platform, its
+# tooling, and the docs -- none of it is served, and shipping pyproject.toml is
+# what made Vercel auto-detect this repo as a Python backend and fail the build
+# with "No python entrypoint found". vercel.json pins framework/build/install
+# explicitly; this file removes the trigger as well.
+
+gauntlet/
+tests/
+tools/
+rulepacks/
+flows/
+waivers/
+ui-ux-pro-max/
+runs/
+
+pyproject.toml
+*.md
+.github/

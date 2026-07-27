@@ -15,7 +15,7 @@ delta reporting.**
 [![platform](https://img.shields.io/badge/platform-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-475569?style=flat-square)](#)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)](.github/workflows/gauntlet.yml)
 
-[**Live site**](https://gauntlet.charanreddy.dev) · [The build story](web/project.html) · [About the developer](#about-the-developer)
+[**Live site**](https://gauntlet-charanreddy-27s-projects.vercel.app) · [The build story](web/project.html) · [About the developer](#about-the-developer)
 
 <img src="web/og.png" alt="GAUNTLET — a regression platform, built to be read" width="760">
 
