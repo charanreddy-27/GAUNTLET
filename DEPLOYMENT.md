@@ -46,6 +46,32 @@ and skips detection, so the build is just "copy `web/`". `.vercelignore` removes
 add an `api/` directory (Vercel Functions) instead, and give the function its
 own entrypoint.
 
+### The Production Branch must be `main`
+
+This one is a **dashboard setting** — nothing in this repo can set it, so it is
+worth knowing about.
+
+Vercel pins a project's Production Branch to whatever branch it was **first
+imported from**. This project was imported from `claude/gauntlet-ip-regression-me6p5p`,
+so that became the production branch. The symptom is confusing, because nothing
+looks broken:
+
+- merges to `main` build successfully, but land as **preview** deployments
+  (`target: null`) instead of production;
+- `gauntlet-charanreddy-27s-projects.vercel.app` keeps serving whatever the last
+  real production deployment was — and serves **nothing at all** if that
+  deployment is deleted;
+- the Deployments list is full of green builds while the live URL is stale or
+  blank.
+
+Fix it once, in **Project → Settings → Git → Production Branch → `main` → Save**,
+then promote the newest `main` deployment (**Deployments → ⋯ → Promote to
+Production**). After that every merge to `main` publishes to production
+automatically.
+
+A deployment's `target` field is the thing to check: `"production"` means it is
+live on the production domain, `null` means it is only a preview.
+
 ---
 
 ## Option A — Deploy from the Vercel dashboard (recommended)
@@ -102,28 +128,32 @@ These are the steps GAUNTLET can't do for you. None take long.
    git push -u origin main
    ```
 2. **Deploy to Vercel** using Option A or B above.
-3. **Only if you add a custom domain:** the canonical/OG URLs in
+3. **Set the Production Branch to `main`** — Project → Settings → Git. See
+   [The Production Branch must be `main`](#the-production-branch-must-be-main).
+   Until this is right, merges to `main` only ever produce preview deployments
+   and the live URL never updates.
+4. **Only if you add a custom domain:** the canonical/OG URLs in
    `web/index.html`, `web/about.html`, `web/project.html`, plus
    `web/robots.txt`, `web/sitemap.xml` and the **Live site** link in
    `README.md`, are currently pinned to the production Vercel URL
    `https://gauntlet-charanreddy-27s-projects.vercel.app`. Search-and-replace
    that one string with the new domain — they must stay **absolute** or link
    previews break on LinkedIn/Twitter/Slack.
-4. **Drop in real screenshots.** The README hero currently uses `web/og.png`.
+5. **Drop in real screenshots.** The README hero currently uses `web/og.png`.
    If you want in-app screenshots, add them under a `screenshots/` (or
    `web/assets/`) folder and reference them in `README.md`. A short GIF of
    `gauntlet run` + `diff` is the single highest-leverage asset here.
-5. **Add the LinkedIn post link.** Once you post about the project, put the URL
+6. **Add the LinkedIn post link.** Once you post about the project, put the URL
    in the `project.html` CTA ("Read the LinkedIn post") and the README.
-6. **Validate the social card.** Paste the live URL into
+7. **Validate the social card.** Paste the live URL into
    [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) and
    [opengraph.xyz](https://www.opengraph.xyz) to confirm the OG image renders.
-7. **Sanity-check the contact address.** The site was inconsistent between
+8. **Sanity-check the contact address.** The site was inconsistent between
    `charanreddychanda@gmail.com` and `charanreddychanda27@gmail.com`; it is now
    consistently **`charanreddychanda27@gmail.com`** (the address on the GitHub
    and Vercel accounts) in `web/about.html` and `web/main.js`. If you'd rather
    use the other one, change it in both files.
-8. **(Optional) Run the Python demo in CI or locally** and capture the terminal
+9. **(Optional) Run the Python demo in CI or locally** and capture the terminal
    output / HTML report (`gauntlet report <run> --html out.html`) as an artifact
    to link from the site.
 
@@ -147,6 +177,7 @@ The `gauntlet` CLI is a separate artifact from the website — Vercel only serve
 | Symptom | Fix |
 |---|---|
 | `Error: No python entrypoint found` | `framework`/`buildCommand`/`installCommand` fell back to auto-detection and `pyproject.toml` made Vercel think this is a Python backend. Keep all three set explicitly in `vercel.json` (see above). |
+| Builds are green but the live URL is stale or blank | The deployments are landing as previews. Check the Production Branch is `main` (see above), then promote the latest `main` deployment. |
 | Vercel builds nothing / 404 at root | Ensure `vercel.json` is at the **repo root**, or set Root Directory to `web` in the dashboard. |
 | Site shows stale CSS/JS after a deploy | Assets are cached for an hour with `stale-while-revalidate`; hard-reload, or wait it out. Don't reintroduce `immutable` — the filenames carry no content hash. |
 | `/about` 404s but `/about.html` works | `cleanUrls` isn't applied — confirm `vercel.json` deployed; redeploy. |
