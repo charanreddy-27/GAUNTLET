@@ -1,0 +1,14 @@
+INFO: Verilator-style lint pass starting for design 'ip_block_a'
+INFO: reading filelist ip_block_a/rtl.f (6 files)
+INFO: parsing ip_block_a/top.v
+INFO: parsing ip_block_a/ctrl.v
+INFO: parsing ip_block_a/fsm.v
+INFO: parsing ip_block_a/fifo.v
+INFO: parsing ip_block_a/decode.v
+INFO: parsing ip_block_a/regs.v
+[LINT-042] WARNING: signal 'clk_en' declared but never read (ip_block_a/ctrl.v:118)
+[LINT-088] WARNING: case statement without default branch (ip_block_a/decode.v:77)
+[LINT-113] WARNING: unused parameter 'DEPTH_LOG2' (ip_block_a/fifo.v:12)
+[LINT-107] WARNING: implicit wire declaration 'rst_sync' (ip_block_a/top.v:44)
+INFO: elaboration complete, 14 modules, 3121 nets
+INFO: lint complete: 4 warnings, 0 errors

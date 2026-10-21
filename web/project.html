@@ -46,6 +46,8 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
   <div class="nav-links" id="navLinks">
     <a href="index.html">Overview</a>
     <a href="index.html#how">How it works</a>
+    <a href="index.html#playground">Playground</a>
+    <a href="index.html#dashboard">Dashboard</a>
     <a href="index.html#features">Features</a>
     <a href="project.html" aria-current="page">The project</a>
     <a href="about.html">About</a>
@@ -109,8 +111,8 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
 <section style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
   <div class="wrap">
     <span class="eyebrow">How it came together</span>
-    <h2 class="section-title">A focused two-day sprint.</h2>
-    <p class="section-lead">Scoped tight on purpose. Built strictly in phases — core first, stretch features only after the demo was already complete.</p>
+    <h2 class="section-title">A focused two-day sprint. Then a second pass.</h2>
+    <p class="section-lead">Scoped tight on purpose. Built strictly in phases — core first, stretch features only after the demo was already complete. v0.2 came later, once the core had earned it.</p>
 
     <div class="timeline">
       <div class="tl-item reveal">
@@ -140,13 +142,18 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
       </div>
       <div class="tl-item reveal">
         <div class="tl-date">JUL 2026 · DAY 2, EVENING — POLISH &amp; PROOF</div>
-        <h4>SQLite history, 36+ offline tests, seeded determinism</h4>
+        <h4>SQLite history, 43 offline tests, seeded determinism</h4>
         <p>Persistence so history/report/diff work from the DB alone. A deterministic mock-tool harness (<code>GAUNTLET_SEED</code> for byte-identical runs, <code>GAUNTLET_FLAKE</code> to inject regressions). A fast, fully-offline test suite — because a regression platform with a flaky test suite is a bad joke.</p>
       </div>
       <div class="tl-item launch reveal">
         <div class="tl-date">JUL 2026 · STRETCH &amp; LAUNCH</div>
         <h4>HTML reports, CI workflow, retries — and this site</h4>
         <p>Only after the core was demo-complete: self-contained HTML reports, a GitHub Actions workflow that archives run evidence, honest flaky-pass retries — and a cross-platform test rewrite so the whole thing is green on Linux, macOS, and Windows.</p>
+      </div>
+      <div class="tl-item launch reveal">
+        <div class="tl-date">OCT 2026 · v0.2 — FROM A REPORT TO A PLATFORM</div>
+        <h4>A dashboard, CI-native outputs, and a memory for flakiness</h4>
+        <p>The scheduler now records every step's window, so reports draw the DAG with its critical path and a timeline of what really ran in parallel. <code>gauntlet serve</code> puts history, reports, diffs and a log viewer on localhost — still stdlib only. <code>--junit</code> and <code>--markdown</code> speak CI's language, <code>stats</code> names the steps that keep flipping, and <code>latest~1 latest</code> works anywhere a run id does. Old databases migrate in place; the suite grew from 43 to 67 tests. One dependency, still.</p>
       </div>
     </div>
   </div>
@@ -190,7 +197,8 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
       <div class="stack-row reveal"><div class="s-name">ThreadPoolExecutor <span class="tag">concurrency</span></div><p>Workers block in <code>subprocess.wait()</code> where the GIL is released, so threads give true parallelism without the cognitive tax of asyncio or multiprocessing.</p></div>
       <div class="stack-row reveal"><div class="s-name">SQLite (stdlib) <span class="tag">storage</span></div><p>One file, three tables, no ORM, no server. It's the platform's memory — durable, queryable, zero-ops.</p></div>
       <div class="stack-row reveal"><div class="s-name">PyYAML <span class="tag">the one dep</span></div><p>Flows, rulepacks and waivers are declarative YAML. The only third-party package in the whole project — and it earns the slot.</p></div>
-      <div class="stack-row reveal"><div class="s-name">re + string.Template <span class="tag">parsing / reports</span></div><p>Compiled-once regex rulepacks classify logs line-by-line; the HTML report is a stdlib template — a self-contained page with no build step and no new deps.</p></div>
+      <div class="stack-row reveal"><div class="s-name">re + inline SVG <span class="tag">parsing / reports</span></div><p>Compiled-once regex rulepacks classify logs line-by-line. Reports lay out the DAG and timeline in Python and emit plain SVG — a self-contained page that renders offline, prints, and needs no JavaScript to be read.</p></div>
+      <div class="stack-row reveal"><div class="s-name">http.server <span class="tag">dashboard</span></div><p><code>gauntlet serve</code> is a read-only <code>ThreadingHTTPServer</code> over the same SQLite file. Logs are only served from inside the runs directory, whatever the database says.</p></div>
       <div class="stack-row reveal"><div class="s-name">pytest + GitHub Actions <span class="tag">quality</span></div><p>A fast, deterministic, fully-offline suite, run in CI on every push — with run artifacts uploaded even when a run fails, so the evidence survives.</p></div>
     </div>
   </div>

@@ -1,0 +1,12 @@
+INFO: synthesis starting for 'ip_block_a' (effort=quick)
+INFO: reading liberty lib tsmc_mock_7nm_tt.lib
+INFO: technology mapping ... done
+INFO: mapped 13097 cells, est. area 0.1487 mm2
+INFO: timing summary (setup, worst 6 paths):
+  path clk->data_out          slack +0.67ns  MET
+  path clk->irq_line          slack +0.13ns  MET
+  path fifo_rd->arb_grant     slack +0.13ns  MET
+  path csr_wr->cfg_shadow     slack +0.40ns  MET
+  path scan_en->bist_mux      slack +0.30ns  MET
+  path rst_sync->state_q      slack +0.65ns  MET
+INFO: synthesis complete: 0 timing errors
