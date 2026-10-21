@@ -23,7 +23,9 @@ def render_run(record: RunRecord) -> str:
         total_errors += len(errors)
         total_waived += sum(1 for v in errors if v.waived)
         total_warnings += sum(1 for v in result.violations if v.severity == "WARNING")
-        flaky = " (flaky: passed on retry)" if result.flaky else ""
+        flaky = (
+            f" (flaky: passed on attempt {result.attempts})" if result.flaky else ""
+        )
         lines.append(
             f"  {result.status.value:<8} {result.step_id:<18}{_detail(result)}{flaky}"
         )
@@ -38,6 +40,15 @@ def render_run(record: RunRecord) -> str:
 
 
 def run_duration_s(record: RunRecord) -> float:
+    """Wall-clock length of a run.
+
+    Step windows are measured on a monotonic clock to the millisecond, so they
+    win when present; the ISO timestamps (second precision) are the fallback
+    for runs recorded before v0.2.
+    """
+    ends = [r.end_s for r in record.results.values() if r.end_s is not None]
+    if ends:
+        return max(ends)
     return _iso_delta_s(record.started_at, record.finished_at)
 
 
@@ -77,13 +88,22 @@ def render_history(rows: list[dict]) -> str:
     """Render `gauntlet history` as a fixed-width table."""
     if not rows:
         return "no runs recorded yet"
-    lines = [f"{'RUN':<24} {'FLOW':<20} {'STATUS':<7} {'DURATION':>9}  #FAIL"]
+    with_commit = any(row.get("git_commit") for row in rows)
+    header = f"{'RUN':<24} {'FLOW':<20} {'STATUS':<7} {'DURATION':>9}  #FAIL"
+    lines = [header + ("  COMMIT" if with_commit else "")]
     for row in rows:
-        duration = _iso_delta_s(row["started_at"], row["finished_at"])
-        lines.append(
+        duration = row.get("duration_s")
+        if duration is None:
+            duration = _iso_delta_s(row["started_at"], row["finished_at"])
+        line = (
             f"{row['run_id']:<24} {row['flow_name']:<20} {row['status']:<7}"
-            f" {duration:>8.1f}s  {row['failed_steps']}"
+            f" {duration:>8.1f}s  {row['failed_steps']:<5}"
         )
+        if with_commit:
+            commit = (row.get("git_commit") or "")[:8]
+            branch = row.get("git_branch") or ""
+            line += f"  {commit} {branch}".rstrip()
+        lines.append(line.rstrip())
     return "\n".join(lines)
 
 

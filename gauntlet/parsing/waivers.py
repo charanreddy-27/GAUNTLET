@@ -66,4 +66,5 @@ def apply_waivers(violations: list[Violation], waivers: tuple[Waiver, ...]) -> N
             if waiver.applies_to(violation):
                 violation.waived = True
                 violation.waive_reason = waiver.reason
+                violation.waive_owner = waiver.owner or None
                 break

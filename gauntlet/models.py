@@ -58,6 +58,7 @@ class Violation:
     message: str
     waived: bool = False
     waive_reason: str | None = None
+    waive_owner: str | None = None   # who signed the waiver (audit trail)
 
 
 @dataclass
@@ -71,6 +72,23 @@ class StepResult:
     log_path: str
     violations: list[Violation] = field(default_factory=list)
     flaky: bool = False      # passed, but only after at least one retry
+    # Wall-clock window relative to run start, first attempt to last. None for
+    # SKIPPED steps (they never ran) and for runs recorded before v0.2.
+    start_s: float | None = None
+    end_s: float | None = None
+    attempts: int = 1        # 0 for SKIPPED; >1 when retries were spent
+
+    @property
+    def errors(self) -> list[Violation]:
+        return [v for v in self.violations if v.severity == "ERROR"]
+
+    @property
+    def unwaived_errors(self) -> list[Violation]:
+        return [v for v in self.violations if v.severity == "ERROR" and not v.waived]
+
+    @property
+    def warnings(self) -> list[Violation]:
+        return [v for v in self.violations if v.severity == "WARNING"]
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -78,7 +96,7 @@ class StepResult:
         return d
 
     @classmethod
-    def from_dict(cls, d: dict) -> "StepResult":
+    def from_dict(cls, d: dict) -> StepResult:
         violations = [Violation(**v) for v in d.get("violations", [])]
         return cls(
             step_id=d["step_id"],
@@ -88,6 +106,9 @@ class StepResult:
             log_path=d["log_path"],
             violations=violations,
             flaky=d.get("flaky", False),
+            start_s=d.get("start_s"),
+            end_s=d.get("end_s"),
+            attempts=d.get("attempts", 1),
         )
 
 
@@ -101,6 +122,12 @@ class RunRecord:
     finished_at: str
     status: str              # "PASS" | "FAIL"
     results: dict[str, StepResult]
+    # The flow's dependency graph as it was when this run executed, so reports
+    # can draw the DAG long after the YAML has changed. step_id -> deps.
+    dag: dict[str, list[str]] = field(default_factory=dict)
+    # Which commit ran the gauntlet, when the run happened inside a git repo.
+    git_commit: str | None = None
+    git_branch: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -109,11 +136,14 @@ class RunRecord:
             "started_at": self.started_at,
             "finished_at": self.finished_at,
             "status": self.status,
+            "git_commit": self.git_commit,
+            "git_branch": self.git_branch,
+            "dag": {sid: list(deps) for sid, deps in self.dag.items()},
             "results": {sid: r.to_dict() for sid, r in self.results.items()},
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "RunRecord":
+    def from_dict(cls, d: dict) -> RunRecord:
         return cls(
             run_id=d["run_id"],
             flow_name=d["flow_name"],
@@ -121,4 +151,7 @@ class RunRecord:
             finished_at=d["finished_at"],
             status=d["status"],
             results={sid: StepResult.from_dict(r) for sid, r in d["results"].items()},
+            dag={sid: list(deps) for sid, deps in (d.get("dag") or {}).items()},
+            git_commit=d.get("git_commit"),
+            git_branch=d.get("git_branch"),
         )

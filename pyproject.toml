@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gauntlet"
-version = "0.1.0"
+version = "0.2.0"
 description = "Miniature IP-regression platform: DAG flow runner, EDA-style log parsing, waivers, run-to-run diff"
 requires-python = ">=3.10"
 dependencies = ["PyYAML>=6.0"]
@@ -17,3 +17,17 @@ gauntlet = "gauntlet.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["gauntlet*"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["runs", "web", "ui-ux-pro-max"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501", "SIM105", "SIM108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["gauntlet", "probe"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

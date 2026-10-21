@@ -51,7 +51,7 @@ def main() -> int:
         )
         errors = 1
 
-    print(f"INFO: elaboration complete, 14 modules, 3121 nets")
+    print("INFO: elaboration complete, 14 modules, 3121 nets")
     print(f"INFO: lint complete: {len(warnings)} warnings, {errors} errors")
     return 1 if errors else 0
 

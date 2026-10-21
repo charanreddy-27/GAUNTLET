@@ -5,9 +5,9 @@ the suite behaves identically on Linux, macOS and Windows.
 """
 import time
 
-from probe import cmd
 from gauntlet.models import FlowSpec, StepSpec, StepStatus
 from gauntlet.scheduler import Scheduler
+from probe import cmd
 
 
 def _run(steps, tmp_path, **kw):
