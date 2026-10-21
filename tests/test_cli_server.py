@@ -32,9 +32,9 @@ def workspace(tmp_path, monkeypatch):
 def test_run_report_diff_graph_stats(workspace, capsys):
     tmp, flow = workspace
     assert main(["run", str(flow), "--junit", "out/j.xml", "--markdown", "out/s.md", "--html", "out/r.html"]) == 0
-    assert (tmp / "out/j.xml").read_text().startswith("<?xml")
-    assert "GAUNTLET · tiny" in (tmp / "out/s.md").read_text()
-    html = (tmp / "out/r.html").read_text()
+    assert (tmp / "out/j.xml").read_text(encoding="utf-8").startswith("<?xml")
+    assert "GAUNTLET · tiny" in (tmp / "out/s.md").read_text(encoding="utf-8")
+    html = (tmp / "out/r.html").read_text(encoding="utf-8")
     assert 'href="../runs/' in html  # log links resolve from the report's folder
 
     # second run, then break `check` and run a third
