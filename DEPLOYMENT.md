@@ -24,6 +24,14 @@ checklist of the things only you can do.
   out of the deployment entirely — only `web/` ships.
 - **No environment variables are required.** The contact form uses a `mailto:`
   handoff (no backend, no secrets).
+- **`web/demo/`** holds real reports produced by the tool itself — a regression
+  run, its clean baseline, and the diff between them, plus their logs. They are
+  generated, not hand-written: after changing the report renderer, run
+  `python scripts/build_site_demo.py` and commit the result. `web/assets/` holds
+  the dashboard screenshots used by the site's tour.
+- **`web/playground.js`** powers the in-browser playground. It mirrors the
+  scheduler/parser/diff rules in vanilla JS; if those rules change in Python,
+  change them there too.
 
 ### Why `framework` and the commands are set explicitly
 

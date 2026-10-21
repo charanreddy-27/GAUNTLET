@@ -172,8 +172,8 @@ one place, single-threaded.
 ## "What I'd improve next" (growth & self-awareness)
 
 - **Retry policy.** Today it's naive immediate re-attempts. I'd add jittered
-  backoff and per-step configuration, and treat "flaky" as a first-class metric
-  tracked across runs, not just a per-run flag.
+  backoff and per-step configuration. (v0.2 already made "flaky" a cross-run
+  metric — `gauntlet stats` counts flips and flaky retries per step.)
 - **Structured log parsing.** Regex rulepacks are pragmatic but brittle for
   multi-line diagnostics. I'd add optional stateful/multi-line matchers.
 - **Waiver lifecycle.** Real waivers should expire and nag. I'd add an expiry
@@ -182,6 +182,30 @@ one place, single-threaded.
   scheduling (skip steps whose inputs are unchanged) is the obvious next win.
 - **Observability.** Structured JSON events + timing histograms would make the
   scheduler's behavior legible under load.
+
+---
+
+## The v0.2 story — "what did you do after it worked?"
+
+**Situation.** v0.1 answered "what changed between two runs?" well, but every
+answer lived in a terminal. Nobody could *see* a run, CI couldn't render it,
+and a step that flipped every other night looked fine in any single diff.
+
+**Task.** Make the platform legible — to people, to CI, and across history —
+without giving up the constraint that made it readable: one dependency.
+
+**Action.** Recorded every step's window on one monotonic clock, which made a
+timeline, peak parallelism and a duration-weighted critical path possible.
+Rebuilt the HTML report as a design system with SVG laid out in Python (no JS
+needed to read it), and put a read-only `http.server` dashboard over the same
+SQLite file. Added JUnit and Markdown outputs so any CI can render a run, and
+`stats` so flakiness is a number, not a feeling. Migrated old databases in
+place instead of asking anyone to start over.
+
+**Result.** 43 → 67 tests, still one dependency, and CI now gates on the delta
+*and proves the gate trips* on an injected regression. Writing the
+end-to-end tests also caught a real bug: two runs in the same second sorted by
+their random id suffix, so `latest` could be the wrong run.
 
 ---
 

@@ -4,28 +4,90 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: gauntlet-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  smoke:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
 
+  test:
+    name: test · py${{ matrix.python }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Install
         run: pip install -e ".[dev]"
-
       - name: Unit tests
         run: pytest -q
 
-      - name: Run smoke flow
-        run: gauntlet run flows/smoke.yaml --workers 4
-        env:
-          GAUNTLET_SEED: "7"
+  # Dogfooding: the regression platform gates its own CI on the delta.
+  smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      GAUNTLET_SEED: "7"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
 
-      - name: Upload run artifacts
+      - name: Baseline run
+        run: gauntlet run flows/smoke.yaml --workers 4
+
+      - name: Candidate run (JUnit + HTML + step summary)
+        run: |
+          gauntlet run flows/smoke.yaml --workers 4 \
+            --junit runs/junit.xml --html runs/report.html
+          gauntlet report latest --markdown - >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Gate on the delta (must be clean)
+        run: |
+          gauntlet diff latest~1 latest --markdown - >> "$GITHUB_STEP_SUMMARY"
+          gauntlet diff latest~1 latest
+
+      - name: Prove the gate trips on an injected regression
+        env:
+          GAUNTLET_FLAKE: "0.3"
+        run: |
+          gauntlet run flows/smoke.yaml --workers 4 --keep-going || true
+          if gauntlet diff latest~1 latest; then
+            echo "::error::diff exited 0 on a known regression — the gate is broken"
+            exit 1
+          fi
+          echo "diff exited non-zero on the injected regression, as it should"
+
+      - name: Stability over the three runs
+        run: gauntlet stats
+
+      - name: Upload run evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
