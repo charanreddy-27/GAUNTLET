@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GAUNTLET — every commit runs the gauntlet</title>
-<meta name="description" content="A miniature IP-regression platform: a DAG flow runner, EDA-style log parsing, waivers, and run-to-run diff — in pure Python. Every commit runs the gauntlet.">
+<meta name="description" content="A miniature IP-regression platform: a DAG flow runner, EDA-style log parsing, waivers, run-to-run diff, and a local dashboard — in pure Python. Every commit runs the gauntlet.">
 <meta name="author" content="Chanda Charan Reddy">
 <meta name="theme-color" content="#070b14" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
@@ -47,6 +47,8 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
   <div class="nav-links" id="navLinks">
     <a href="index.html" aria-current="page">Overview</a>
     <a href="index.html#how">How it works</a>
+    <a href="index.html#playground">Playground</a>
+    <a href="index.html#dashboard">Dashboard</a>
     <a href="index.html#features">Features</a>
     <a href="project.html">The project</a>
     <a href="about.html">About</a>
@@ -72,7 +74,8 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
     <div class="hero-copy">
       <div class="badge-row">
         <span class="pill"><span class="dot"></span>Pure Python 3.10+ · one dependency</span>
-        <span class="pill">36+ tests · fully offline</span>
+        <span class="pill">67 tests · fully offline</span>
+        <a class="pill pill-new" href="#dashboard">New in v0.2 · a dashboard, zero new deps →</a>
       </div>
       <h1>Every commit runs<br><span class="grad">the gauntlet.</span></h1>
       <p class="hero-tag">// a miniature IP-regression platform</p>
@@ -86,12 +89,12 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
           See how it works
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="btn btn-ghost" href="project.html">Read the build story</a>
+        <a class="btn btn-ghost" href="#playground">Try it in the browser</a>
       </div>
       <div class="hero-stats">
         <div class="stat"><div class="n">5</div><div class="l">status states, not 2</div></div>
-        <div class="stat"><div class="n">4</div><div class="l">CLI commands</div></div>
-        <div class="stat"><div class="n">~3s</div><div class="l">full test suite</div></div>
+        <div class="stat"><div class="n">7</div><div class="l">CLI commands</div></div>
+        <div class="stat"><div class="n">1</div><div class="l">dependency, total</div></div>
       </div>
     </div>
 
@@ -99,7 +102,7 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
       <div class="terminal" aria-hidden="true">
         <div class="term-bar">
           <span class="term-dots"><i></i><i></i><i></i></span>
-          <span class="term-title">gauntlet — run flows/smoke.yaml</span>
+          <span class="term-title">gauntlet 0.2 — run flows/smoke.yaml</span>
         </div>
         <div class="term-body" id="termBody"></div>
       </div>
@@ -265,6 +268,120 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
   </div>
 </section>
 
+
+<!-- ===================================================== PLAYGROUND -->
+<section id="playground" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <span class="eyebrow">Now you try</span>
+    <h2 class="section-title">Break the build.<br>Watch the <span class="text-green">delta</span> catch it.</h2>
+    <p class="section-lead">
+      The scheduler's real rules, replayed in your browser: steps start only when
+      their dependencies pass, failures cascade <span class="st st-skipped">SKIPPED</span>,
+      waivers turn a known error <span class="st st-waived">WAIVED</span>. Run it clean,
+      inject a fault, run again — then read the diff.
+    </p>
+
+    <div class="pg reveal" id="pgApp">
+      <div class="pg-controls">
+        <div class="pg-group">
+          <span class="pg-label" id="pgFaultsLabel">Inject a fault</span>
+          <div class="pg-chips" role="group" aria-labelledby="pgFaultsLabel">
+            <button class="pg-toggle" type="button" data-fault="flake" aria-pressed="false">flake · fifo overflow in u_fifo_tx</button>
+            <button class="pg-toggle" type="button" data-fault="hang" aria-pressed="false">hang · sim_integration</button>
+            <button class="pg-toggle" type="button" data-fault="lint" aria-pressed="false">lint · inferred latch</button>
+          </div>
+        </div>
+        <div class="pg-group">
+          <span class="pg-label" id="pgWaiverLabel">Waivers</span>
+          <div class="pg-chips" role="group" aria-labelledby="pgWaiverLabel">
+            <button class="pg-toggle waiver" type="button" data-waiver aria-pressed="true">IPREG-1301 · u_fifo_rx</button>
+          </div>
+        </div>
+        <div class="pg-actions">
+          <button class="btn btn-ghost" type="button" id="pgReset">Reset</button>
+          <button class="btn btn-primary" type="button" id="pgRun">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+            <span>gauntlet run</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pg-stage">
+        <div class="pg-dag" id="pgDag"></div>
+        <div class="terminal pg-term">
+          <div class="term-bar">
+            <span class="term-dots"><i></i><i></i><i></i></span>
+            <span class="term-title">flows/smoke.yaml · 4 workers</span>
+          </div>
+          <div class="term-body" id="pgTerm" role="log" aria-live="polite" aria-label="Run output"></div>
+        </div>
+      </div>
+
+      <div class="pg-foot">
+        <div class="pg-hist">
+          <span class="pg-label">This session's runs</span>
+          <ol id="pgHistory" aria-label="Runs so far"></ol>
+        </div>
+        <div class="pg-diff" id="pgDiff" aria-live="polite">
+          <p class="pg-hint">Run the flow once to set a baseline.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================== DASHBOARD -->
+<section id="dashboard">
+  <div class="wrap">
+    <span class="eyebrow">New in v0.2</span>
+    <h2 class="section-title">See it. Don't grep it.</h2>
+    <p class="section-lead">
+      <code>gauntlet serve</code> opens a local dashboard over the same SQLite file
+      the CLI writes — run history, a report per run, any-two-runs diff, and which
+      steps keep flipping. Standard library only: <code>http.server</code> and
+      <code>sqlite3</code>. It reloads itself when a new run lands.
+    </p>
+
+    <div class="tour reveal">
+      <div class="tour-tabs" role="tablist" aria-label="Dashboard pages">
+        <button class="tour-tab" role="tab" type="button" aria-selected="true" aria-controls="shot-dashboard" id="tab-dashboard" data-url="127.0.0.1:8765/">
+          <b>Runs</b><span>Trend, pass rate, streak — and a one-click diff against the previous run.</span>
+        </button>
+        <button class="tour-tab" role="tab" type="button" aria-selected="false" aria-controls="shot-report" id="tab-report" data-url="127.0.0.1:8765/runs/latest">
+          <b>Run report</b><span>The flow graph with the critical path lit, a timeline of what ran when, every violation, and the waiver debt by owner.</span>
+        </button>
+        <button class="tour-tab" role="tab" type="button" aria-selected="false" aria-controls="shot-diff" id="tab-diff" data-url="127.0.0.1:8765/diff?a=latest~1&amp;b=latest">
+          <b>Diff</b><span>What broke that was working. <code>latest~1 latest</code> works anywhere a run id does.</span>
+        </button>
+        <button class="tour-tab" role="tab" type="button" aria-selected="false" aria-controls="shot-stats" id="tab-stats" data-url="127.0.0.1:8765/stats">
+          <b>Stability</b><span>Pass rate, flips and flaky retries per step — noise is where real regressions hide.</span>
+        </button>
+        <button class="tour-tab" role="tab" type="button" aria-selected="false" aria-controls="shot-log" id="tab-log" data-url="127.0.0.1:8765/runs/latest/log/sim_unit">
+          <b>Log viewer</b><span>The exact lines a rulepack matched, highlighted and linkable.</span>
+        </button>
+      </div>
+      <div>
+        <div class="frame">
+          <div class="frame-bar">
+            <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="frame-url" id="tourUrl">127.0.0.1:8765/</span>
+          </div>
+          <img class="frame-shot" id="shot-dashboard" role="tabpanel" aria-labelledby="tab-dashboard" src="assets/dashboard.webp" width="1280" height="900" alt="GAUNTLET dashboard: latest run failed, 75% pass rate over 12 runs, a trend chart of run durations colored by verdict, and the run history table." loading="lazy">
+          <img class="frame-shot" id="shot-report" role="tabpanel" aria-labelledby="tab-report" src="assets/report.webp" width="1280" height="1640" alt="A run report: FAIL verdict, KPI tiles, the flow DAG with the critical path highlighted, a timeline of step windows, and the steps table." loading="lazy" hidden>
+          <img class="frame-shot" id="shot-diff" role="tabpanel" aria-labelledby="tab-diff" src="assets/diff.webp" width="1280" height="760" alt="Diff page: REGRESSION with one new failure, sim_unit went from WAIVED to FAIL; exit code 1." loading="lazy" hidden>
+          <img class="frame-shot" id="shot-stats" role="tabpanel" aria-labelledby="tab-stats" src="assets/stats.webp" width="1280" height="560" alt="Stability page: a colored status strip per step across 12 runs, pass rate bars, flips, and verdicts — sim_unit failing, lint_rtl flaky." loading="lazy" hidden>
+          <img class="frame-shot" id="shot-log" role="tabpanel" aria-labelledby="tab-log" src="assets/log.webp" width="1280" height="560" alt="Log viewer with line numbers; the unwaived SIM-ERR-007 error line is highlighted red, the waived one amber." loading="lazy" hidden>
+        </div>
+        <div class="tour-links">
+          <a class="btn btn-primary" href="demo/report.html">Open a real report</a>
+          <a class="btn btn-ghost" href="demo/diff.html">Open a real diff</a>
+          <a class="btn btn-ghost" href="demo/report-clean.html">…and its baseline</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ======================================================= FEATURES -->
 <section id="features" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
   <div class="wrap">
@@ -296,12 +413,32 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
       <div class="card reveal">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div>
         <h3>Shareable HTML reports</h3>
-        <p><code>report &lt;run&gt; --html</code> writes one self-contained page — step summary, per-step log links, violation tables — with zero new dependencies.</p>
+        <p><code>report latest --html</code> writes one self-contained page — DAG, timeline, filterable violations, waiver debt — that opens offline. <a class="text-green" href="demo/report.html">See one →</a></p>
       </div>
       <div class="card reveal">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg></div>
         <h3>Retries that stay honest</h3>
         <p>A step that only passes on retry is marked <em>flaky</em>: it satisfies its dependents, but every report says so. A flaky pass is information, not a pass.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 14l3-3 2 2 5-5M8 21h8"/></svg></div>
+        <h3>A local dashboard</h3>
+        <p><code>gauntlet serve</code> — runs, reports, diffs and stability over the SQLite history. Read-only, localhost by default, stdlib only.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+        <h3>CI-native outputs</h3>
+        <p><code>--junit</code> for every CI test tab, <code>--markdown</code> for <code>$GITHUB_STEP_SUMMARY</code> with the DAG as Mermaid. WAIVED never flattens into a plain pass.</p>
+      </div>
+      <div class="card span-2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+        <h3>Stability, not just status</h3>
+        <p><code>gauntlet stats</code> reads the last N runs and scores each step: pass rate, flips between neighbours, flaky retries, p95 duration — then names the steps that need an owner. A diff answers "what changed"; this answers "what keeps changing".</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 8l3.3 7.8M16.5 8l-3.3 7.8"/></svg></div>
+        <h3>Graph &amp; critical path</h3>
+        <p><code>gauntlet graph</code> prints layers, Mermaid or DOT. Reports light up the dependency chain that bounded wall-clock time.</p>
       </div>
     </div>
   </div>
@@ -312,7 +449,7 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
   <div class="wrap">
     <span class="eyebrow">Run it yourself</span>
     <h2 class="section-title">Three commands to the money shot.</h2>
-    <p class="section-lead">Clone it, install the one dependency, and watch a clean run, a regression, and the diff that catches it.</p>
+    <p class="section-lead">Clone it, install the one dependency, and watch a clean run, a regression, and the diff that catches it. Then open the dashboard.</p>
 
     <div class="install">
       <div class="il">
@@ -324,9 +461,24 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
         <button class="copy-btn" type="button" data-copy="GAUNTLET_SEED=7 gauntlet run flows/smoke.yaml --workers 4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
       </div>
       <div class="il">
-        <span class="txt"><span class="p">$</span> <span class="c">gauntlet diff &lt;run_1&gt; &lt;run_2&gt;&nbsp;&nbsp;<span style="color:var(--muted)"># exits 1 → CI-usable</span></span></span>
-        <button class="copy-btn" type="button" data-copy="gauntlet diff <run_1> <run_2>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
+        <span class="txt"><span class="p">$</span> <span class="c">gauntlet diff latest~1 latest&nbsp;&nbsp;<span style="color:var(--muted)"># exits 1 → CI-usable</span></span></span>
+        <button class="copy-btn" type="button" data-copy="gauntlet diff latest~1 latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
       </div>
+      <div class="il">
+        <span class="txt"><span class="p">$</span> <span class="c">gauntlet serve --open&nbsp;&nbsp;<span style="color:var(--muted)"># the dashboard, on localhost</span></span></span>
+        <button class="copy-btn" type="button" data-copy="gauntlet serve --open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>copy</button>
+      </div>
+    </div>
+
+    <div class="terminal ci-snippet reveal">
+      <div class="term-bar">
+        <span class="term-dots"><i></i><i></i><i></i></span>
+        <span class="term-title">.github/workflows/regression.yml — gate every PR on the delta</span>
+      </div>
+<pre><span class="c"># run, publish JUnit + a step summary, then fail the job only on NEW failures</span>
+- <span class="k">run</span>: gauntlet run flows/nightly.yaml <span class="s">--keep-going --junit</span> junit.xml || true
+- <span class="k">run</span>: gauntlet report latest <span class="s">--markdown</span> - &gt;&gt; "$GITHUB_STEP_SUMMARY"
+- <span class="k">run</span>: gauntlet diff latest~1 latest      <span class="c"># exit 1 → the gate trips</span></pre>
     </div>
   </div>
 </section>
@@ -386,5 +538,6 @@ document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
 </footer>
 
 <script src="main.js" defer></script>
+<script src="playground.js" defer></script>
 </body>
 </html>

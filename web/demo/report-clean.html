@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="gauntlet 0.2.0">
+<title>PASS · smoke_ip_block_a · run_20261019_1220_3424 — gauntlet</title>
+<script>(function(){try{var t=localStorage.getItem('gauntlet-report-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<style>
+:root {
+  --bg: #070b14; --bg-2: #0b1120; --surface: #0f1729; --surface-2: #131c30;
+  --border: rgba(148,163,184,.15); --border-strong: rgba(148,163,184,.28);
+  --text: #e8edf6; --text-2: #aab6c9; --muted: #7d8aa0;
+  --green: #22c55e; --amber: #f59e0b; --red: #f43f5e; --purple: #a855f7; --slate: #64748b; --cyan: #38bdf8;
+  --green-soft: rgba(34,197,94,.14); --amber-soft: rgba(245,158,11,.15); --red-soft: rgba(244,63,94,.15);
+  --purple-soft: rgba(168,85,247,.16); --slate-soft: rgba(100,116,139,.18);
+  --shadow: 0 18px 50px -28px rgba(0,0,0,.8);
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "IBM Plex Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius: 14px; --radius-sm: 9px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f6fb; --bg-2: #eef2f8; --surface: #ffffff; --surface-2: #f7f9fc;
+    --border: #e2e8f0; --border-strong: #cbd5e1;
+    --text: #0f172a; --text-2: #334155; --muted: #64748b;
+    --green: #16a34a; --amber: #d97706; --red: #e11d48; --purple: #9333ea; --slate: #64748b; --cyan: #0284c7;
+    --green-soft: rgba(22,163,74,.11); --amber-soft: rgba(217,119,6,.12); --red-soft: rgba(225,29,72,.10);
+    --purple-soft: rgba(147,51,234,.10); --slate-soft: rgba(100,116,139,.12);
+    --shadow: 0 18px 40px -30px rgba(15,23,42,.35);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f4f6fb; --bg-2: #eef2f8; --surface: #ffffff; --surface-2: #f7f9fc;
+  --border: #e2e8f0; --border-strong: #cbd5e1;
+  --text: #0f172a; --text-2: #334155; --muted: #64748b;
+  --green: #16a34a; --amber: #d97706; --red: #e11d48; --purple: #9333ea; --slate: #64748b; --cyan: #0284c7;
+  --green-soft: rgba(22,163,74,.11); --amber-soft: rgba(217,119,6,.12); --red-soft: rgba(225,29,72,.10);
+  --purple-soft: rgba(147,51,234,.10); --slate-soft: rgba(100,116,139,.12);
+  --shadow: 0 18px 40px -30px rgba(15,23,42,.35);
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-2);
+  font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(900px 480px at 85% -10%, rgba(34,197,94,.08), transparent 60%),
+              radial-gradient(700px 420px at 0% 0%, rgba(56,189,248,.06), transparent 55%);
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
+code, .mono { font-family: var(--mono); font-size: .92em; }
+h1, h2, h3 { font-family: var(--mono); color: var(--text); letter-spacing: -.02em; margin: 0; line-height: 1.2; }
+h2 { font-size: 15px; font-weight: 700; }
+
+/* ---------------------------------------------------------------- frame */
+.topbar {
+  position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-in { max-width: 1240px; margin: 0 auto; padding: 0 20px; height: 58px; display: flex; align-items: center; gap: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 15px var(--mono); color: var(--text); letter-spacing: .02em; }
+.brand:hover { text-decoration: none; }
+.brand svg { width: 26px; height: 26px; }
+.brand small { color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav a { color: var(--text-2); font: 500 13px var(--mono); padding: 6px 10px; border-radius: 8px; }
+.nav a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.nav a[aria-current="page"] { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border); }
+.spacer { flex: 1; }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+.icon-btn svg { width: 16px; height: 16px; }
+.live { display: inline-flex; align-items: center; gap: 7px; font: 500 12px var(--mono); color: var(--muted); }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 var(--green); animation: ping 2s infinite; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 80%, 100% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+@media (prefers-reduced-motion: reduce) { .live i { animation: none; } }
+
+main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 64px; display: grid; gap: 20px; }
+main > * { min-width: 0; }
+.footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font: 12px var(--mono); display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+.card-h { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.card-h .sub { color: var(--muted); font: 12px var(--mono); }
+.card-b { padding: 18px; }
+.card-b.flush { padding: 0; }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 960px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.scroll-x { overflow-x: auto; }
+
+/* ----------------------------------------------------------------- hero */
+.hero { padding: 22px 22px 20px; display: grid; gap: 16px; position: relative; overflow: hidden; }
+.hero::after {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+  background: var(--accent, var(--green));
+}
+.hero.v-FAIL { --accent: var(--red); }
+.hero.v-PASS { --accent: var(--green); }
+.hero-top { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.hero h1 { font-size: clamp(20px, 3.2vw, 28px); font-weight: 800; overflow-wrap: anywhere; }
+.hero .eyebrow { font: 600 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font: 12.5px var(--mono); color: var(--muted); }
+.meta b { color: var(--text-2); font-weight: 600; }
+.verdict {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 10px;
+  font: 800 18px var(--mono); letter-spacing: .06em; padding: 10px 16px; border-radius: 12px;
+}
+.verdict svg { width: 20px; height: 20px; }
+.verdict.PASS { color: var(--green); background: var(--green-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 40%, transparent); }
+.verdict.FAIL { color: var(--red); background: var(--red-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--red) 40%, transparent); }
+
+/* ----------------------------------------------------------------- kpis */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; padding: 12px 14px; min-width: 0; }
+.kpi .l { font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.kpi .n { font: 800 24px var(--mono); color: var(--text); margin-top: 4px; letter-spacing: -.02em; }
+.kpi .n small { font-size: 13px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.kpi .d { font: 12px var(--mono); color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi.bad .n { color: var(--red); } .kpi.warn .n { color: var(--amber); } .kpi.good .n { color: var(--green); }
+
+.dist { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--slate-soft); }
+.dist span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font: 12px var(--mono); color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* --------------------------------------------------------------- status */
+.st {
+  display: inline-flex; align-items: center; gap: 6px; font: 700 11px var(--mono); letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+}
+.st::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.st.PASS { color: var(--green); background: var(--green-soft); }
+.st.WAIVED { color: var(--amber); background: var(--amber-soft); }
+.st.FAIL { color: var(--red); background: var(--red-soft); }
+.st.TIMEOUT { color: var(--purple); background: var(--purple-soft); }
+.st.SKIPPED { color: var(--slate); background: var(--slate-soft); }
+.st.NONE { color: var(--muted); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.bg-PASS { background: var(--green); } .bg-WAIVED { background: var(--amber); } .bg-FAIL { background: var(--red); }
+.bg-TIMEOUT { background: var(--purple); } .bg-SKIPPED { background: var(--slate); }
+.tag { display: inline-flex; align-items: center; gap: 5px; font: 600 11px var(--mono); padding: 2px 7px; border-radius: 6px; color: var(--text-2); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border); white-space: nowrap; }
+.tag.flaky { color: var(--amber); }
+.tag.crit { color: var(--cyan); }
+
+/* --------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface); position: sticky; top: 0; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
+td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+td.step { font: 600 13px var(--mono); color: var(--text); white-space: nowrap; }
+td.msg { color: var(--text-2); overflow-wrap: anywhere; }
+td.dim, .dim { color: var(--muted); }
+tr.waived-row td { opacity: .62; }
+tr.waived-row td.msg { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--amber) 60%, transparent); }
+.sev { font: 700 10.5px var(--mono); letter-spacing: .08em; }
+.sev.ERROR { color: var(--red); } .sev.WARNING { color: var(--amber); } .sev.INFO { color: var(--cyan); }
+
+/* -------------------------------------------------------------- filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+.chip {
+  font: 600 12px var(--mono); color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 5px 11px; cursor: pointer;
+}
+.chip:hover { border-color: var(--border-strong); color: var(--text); }
+.chip[aria-pressed="true"] { color: var(--text); border-color: var(--green); background: var(--green-soft); }
+.chip .c { color: var(--muted); margin-left: 4px; }
+.search {
+  font: 13px var(--mono); color: var(--text); background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 6px 10px; min-width: 200px;
+}
+.search::placeholder { color: var(--muted); }
+select.search { min-width: 0; max-width: 100%; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; font: 700 13px var(--mono); color: #04140a;
+  background: var(--green); border: 0; border-radius: 9px; padding: 8px 14px; cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); text-decoration: none; }
+.btn.ghost { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--border); }
+
+/* ---------------------------------------------------------------- empty */
+.empty { padding: 34px 18px; text-align: center; color: var(--muted); font: 13px var(--mono); }
+.empty b { display: block; color: var(--text); font-size: 15px; margin-bottom: 6px; }
+
+/* ----------------------------------------------------------------- svgs */
+svg.chart { display: block; width: 100%; height: auto; font-family: var(--mono); }
+svg.chart text { fill: var(--text-2); }
+svg .axis { stroke: var(--border-strong); }
+svg .grid { stroke: var(--border); stroke-dasharray: 3 4; }
+svg .tick { fill: var(--muted); font-size: 10.5px; }
+svg .lbl { fill: var(--text); font-size: 12px; font-weight: 600; }
+svg .node rect.box { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.2; }
+svg .node .name { fill: var(--text); font-size: 12.5px; font-weight: 700; }
+svg .node .stat { font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+svg .edge { fill: none; stroke: var(--border-strong); stroke-width: 1.6; }
+svg .edge.crit { stroke: var(--cyan); stroke-width: 2.2; }
+svg .s-PASS { fill: var(--green); stroke: var(--green); }
+svg .s-WAIVED { fill: var(--amber); stroke: var(--amber); }
+svg .s-FAIL { fill: var(--red); stroke: var(--red); }
+svg .s-TIMEOUT { fill: var(--purple); stroke: var(--purple); }
+svg .s-SKIPPED { fill: var(--slate); stroke: var(--slate); }
+svg .bar { stroke-width: 0; }
+svg .bar-skip { fill: none; stroke: var(--slate); stroke-dasharray: 4 4; stroke-width: 1.2; }
+svg .trend-bar { stroke-width: 0; }
+svg a:hover .trend-bar { opacity: .75; }
+
+/* ------------------------------------------------------------ diff page */
+.buckets { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.bucket { border-radius: 12px; padding: 14px; border: 1px solid var(--border); background: var(--surface-2); min-width: 0; }
+.bucket .l { font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.bucket .n { font: 800 28px var(--mono); color: var(--text); }
+.bucket ul { list-style: none; padding: 0; margin: 6px 0 0; font: 12.5px var(--mono); display: grid; gap: 3px; }
+.bucket.new { border-color: color-mix(in srgb, var(--red) 45%, transparent); background: var(--red-soft); } .bucket.new .l { color: var(--red); }
+.bucket.fixed .l { color: var(--green); } .bucket.still .l { color: var(--amber); } .bucket.same .l { color: var(--muted); }
+.arrow { color: var(--muted); font-family: var(--mono); }
+.change { font: 700 11px var(--mono); letter-spacing: .06em; }
+.change.new { color: var(--red); } .change.fixed { color: var(--green); } .change.still { color: var(--amber); } .change.same { color: var(--muted); }
+
+/* ------------------------------------------------------------ stats */
+.strip { display: inline-flex; gap: 3px; vertical-align: middle; }
+.strip i { width: 11px; height: 18px; border-radius: 3px; display: block; }
+.strip i.none { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.rate { display: inline-flex; align-items: center; gap: 8px; font: 12.5px var(--mono); }
+.rate .track { width: 70px; height: 6px; border-radius: 99px; background: var(--slate-soft); overflow: hidden; }
+.rate .fill { display: block; height: 100%; background: var(--green); border-radius: 99px; }
+.rate .fill.mid { background: var(--amber); } .rate .fill.low { background: var(--red); }
+.verdict-tag { font: 700 11px var(--mono); padding: 3px 8px; border-radius: 6px; }
+.verdict-tag.stable { color: var(--green); background: var(--green-soft); }
+.verdict-tag.flaky { color: var(--amber); background: var(--amber-soft); }
+.verdict-tag.failing { color: var(--red); background: var(--red-soft); }
+.verdict-tag.recovered { color: var(--cyan); background: color-mix(in srgb, var(--cyan) 14%, transparent); }
+.verdict-tag.never { color: var(--muted); background: var(--slate-soft); }
+
+/* -------------------------------------------------------------- log view */
+.log { font: 12.5px/1.65 var(--mono); counter-reset: none; overflow-x: auto; }
+.log .ln { display: grid; grid-template-columns: 64px minmax(0, 1fr); }
+.log .ln a.no { color: var(--muted); text-align: right; padding-right: 14px; user-select: none; border-right: 1px solid var(--border); }
+.log .ln code { padding: 0 14px; white-space: pre; color: var(--text-2); font-size: 12.5px; }
+.log .ln.hit-ERROR { background: var(--red-soft); } .log .ln.hit-ERROR code { color: var(--text); }
+.log .ln.hit-WARNING { background: var(--amber-soft); }
+.log .ln.hit-waived { background: color-mix(in srgb, var(--amber) 8%, transparent); }
+.log .ln:target { outline: 1px solid var(--cyan); outline-offset: -1px; }
+
+table.nowrap td { white-space: nowrap; }
+.scroll-x > table { min-width: 720px; }
+@media (max-width: 640px) {
+  .topbar-in { height: auto; padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
+  .topbar-in .nav { order: 5; width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+  main { padding: 18px 16px 48px; }
+  .verdict { margin-left: 0; }
+  .search { min-width: 0; width: 100%; }
+  th, td { padding: 9px 10px; }
+}
+@media print {
+  .topbar, .filters, .icon-btn { display: none !important; }
+  body { background: #fff; }
+  .card { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-in">
+  <span class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1120"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22c55e" stroke-opacity=".45" stroke-width="1.5"/><path d="M16 24 L26 32 L16 40" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="37" width="18" height="5" rx="2.5" fill="#e8edf6"/></svg>GAUNTLET <small>report</small></span>
+  <nav class="nav" aria-label="Sections"></nav>
+  <span class="spacer"></span>
+  
+  <button class="icon-btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+</div></header>
+<main>
+<section class="card card-b" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="tag crit">sample</span><span style="flex:1;min-width:220px">The baseline run: same seed, no flake. <code>sim_unit</code> is WAIVED, not PASS — its known error has an owner.</span><a class="btn ghost" href="/">← back to the GAUNTLET site</a></section>
+<section class="card hero v-PASS" aria-label="Run summary">
+  <div class="hero-top">
+    <div style="min-width:0">
+      <div class="eyebrow">Flow</div>
+      <h1>smoke_ip_block_a</h1>
+    </div>
+    <div class="verdict PASS" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>PASS</div>
+  </div>
+  <div class="meta">
+    <span>run <b>run_20261019_1220_3424</b></span>
+    <span>started <b>2026-10-19 12:20:22</b></span>
+    <span>finished <b>2026-10-19 12:20:29</b></span>
+    <span>commit <b>2877c88eaa</b></span><span>branch <b>main</b></span>
+  </div>
+  
+</section>
+<section class="card card-b" aria-label="Key numbers">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Duration</div><div class="n">6.28<small>s</small></div><div class="d">wall clock</div></div>
+    <div class="kpi"><div class="l">Steps</div><div class="n">4</div><div class="d">3 pass · 1 waived</div></div>
+    <div class="kpi warn"><div class="l">Errors</div><div class="n">1</div><div class="d">0 unwaived · 1 waived</div></div>
+    <div class="kpi warn"><div class="l">Warnings</div><div class="n">5</div><div class="d">never fail a step</div></div>
+    <div class="kpi"><div class="l">Peak parallel</div><div class="n">2</div><div class="d">steps running at once</div></div>
+    <div class="kpi "><div class="l">Flaky</div><div class="n">0</div><div class="d">4 attempt(s) total</div></div>
+  </div>
+  <div style="margin-top:16px"><div class="dist" role="img" aria-label="Status distribution"><span class="bg-PASS" style="width:75.00%" title="3 PASS"></span><span class="bg-WAIVED" style="width:25.00%" title="1 WAIVED"></span></div><div class="legend"><span><i class="bg-PASS"></i>3 pass</span><span><i class="bg-WAIVED"></i>1 waived</span></div></div>
+</section>
+<section class="card" aria-labelledby="h-dag">
+  <div class="card-h"><h2 id="h-dag">Flow graph</h2><span class="sub">4 steps · click a node for detail</span><span class="spacer"></span><span class="tag crit" title="The dependency chain that bounded wall-clock time">critical path · 6.27s</span></div>
+  <div class="card-b scroll-x"><svg class="chart dag" viewBox="0 0 708 148" role="img" aria-label="Flow dependency graph with 4 steps" style="min-width:560px;max-width:708px;margin:0 auto"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs><style>svg.dag text.stat{stroke:none}</style><path class="edge" style="color:var(--border-strong)" marker-end="url(#arrow)" d="M198.0 74.0 C228.5 74.0 228.5 40.0 259.0 40.0"/><path class="edge crit" style="color:var(--cyan)" marker-end="url(#arrow)" d="M198.0 74.0 C228.5 74.0 228.5 108.0 259.0 108.0"/><path class="edge" style="color:var(--border-strong)" marker-end="url(#arrow)" d="M446.0 40.0 C476.5 40.0 476.5 74.0 507.0 74.0"/><path class="edge crit" style="color:var(--cyan)" marker-end="url(#arrow)" d="M446.0 108.0 C476.5 108.0 476.5 74.0 507.0 74.0"/><a href="#step-lint_rtl"><g class="node"><title>lint_rtl — PASS · 1.22s</title><rect class="box" x="14" y="48.0" width="184" height="52" rx="10"/><rect class="s-PASS" x="14" y="48.0" width="4" height="52" rx="2"/><text class="name" x="30" y="70.0">lint_rtl</text><text class="stat s-PASS" x="30" y="87.0">PASS · 1.22s</text></g></a><a href="#step-sim_unit"><g class="node"><title>sim_unit — WAIVED · 0.82s</title><rect class="box" x="262" y="14.0" width="184" height="52" rx="10"/><rect class="s-WAIVED" x="262" y="14.0" width="4" height="52" rx="2"/><text class="name" x="278" y="36.0">sim_unit</text><text class="stat s-WAIVED" x="278" y="53.0">WAIVED · 0.82s</text></g></a><a href="#step-sim_integration"><g class="node"><title>sim_integration — PASS · 2.83s</title><rect class="box" x="262" y="82.0" width="184" height="52" rx="10"/><rect class="s-PASS" x="262" y="82.0" width="4" height="52" rx="2"/><text class="name" x="278" y="104.0">sim_integration</text><text class="stat s-PASS" x="278" y="121.0">PASS · 2.83s</text></g></a><a href="#step-synth_quick"><g class="node"><title>synth_quick — PASS · 2.22s</title><rect class="box" x="510" y="48.0" width="184" height="52" rx="10"/><rect class="s-PASS" x="510" y="48.0" width="4" height="52" rx="2"/><text class="name" x="526" y="70.0">synth_quick</text><text class="stat s-PASS" x="526" y="87.0">PASS · 2.22s</text></g></a></svg></div>
+</section>
+<section class="card" aria-labelledby="h-time">
+  <div class="card-h"><h2 id="h-time">Timeline</h2><span class="sub">when each step ran · hatched = retried</span></div>
+  <div class="card-b scroll-x"><svg class="chart gantt" viewBox="0 0 1160 162" role="img" aria-label="Run timeline: when each of 4 steps ran" style="min-width:640px"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="rgba(255,255,255,.28)"/></pattern></defs><line class="grid" x1="156.0" x2="156.0" y1="20" y2="156"/><text class="tick" x="156.0" y="15" text-anchor="middle">0s</text><line class="grid" x1="455.6" x2="455.6" y1="20" y2="156"/><text class="tick" x="455.6" y="15" text-anchor="middle">2s</text><line class="grid" x1="755.1" x2="755.1" y1="20" y2="156"/><text class="tick" x="755.1" y="15" text-anchor="middle">4s</text><line class="grid" x1="1054.7" x2="1054.7" y1="20" y2="156"/><text class="tick" x="1054.7" y="15" text-anchor="middle">6s</text><a href="#step-lint_rtl"><text class="lbl" x="142" y="46.0" text-anchor="end">lint_rtl</text></a><g><title>lint_rtl: PASS, 0.00s → 1.22s</title><rect class="bar s-PASS" x="156.0" y="34.0" width="182.9" height="16" rx="4"/><text class="tick" x="344.9" y="46.0">1.22s</text></g><a href="#step-sim_unit"><text class="lbl" x="142" y="78.0" text-anchor="end">sim_unit</text></a><g><title>sim_unit: WAIVED, 1.22s → 2.04s</title><rect class="bar s-WAIVED" x="339.0" y="66.0" width="122.7" height="16" rx="4"/><text class="tick" x="467.7" y="78.0">0.82s</text></g><a href="#step-sim_integration"><text class="lbl" x="142" y="110.0" text-anchor="end">sim_integration</text></a><g><title>sim_integration: PASS, 1.22s → 4.05s</title><rect class="bar s-PASS" x="339.0" y="98.0" width="423.7" height="16" rx="4"/><text class="tick" x="768.7" y="110.0">2.83s</text></g><a href="#step-synth_quick"><text class="lbl" x="142" y="142.0" text-anchor="end">synth_quick</text></a><g><title>synth_quick: PASS, 4.05s → 6.28s</title><rect class="bar s-PASS" x="762.7" y="130.0" width="333.3" height="16" rx="4"/><text class="tick" x="1102.0" y="142.0">2.22s</text></g></svg></div>
+</section>
+<section class="card" aria-labelledby="h-steps">
+  <div class="card-h"><h2 id="h-steps">Steps</h2><span class="sub">flow order</span></div>
+  <div class="card-b flush scroll-x"><table>
+    <thead><tr><th>Status</th><th>Step</th><th class="num">Duration</th><th class="num">Window</th><th class="num">Tries</th><th class="num">Err</th><th class="num">Warn</th><th>Detail</th><th>Log</th></tr></thead>
+    <tbody><tr id="step-lint_rtl"><td><span class="st PASS">PASS</span></td><td class="step">lint_rtl <span class="tag crit" title="On the critical path">critical</span></td><td class="num">1.22s</td><td class="num dim">0.00 → 1.22s</td><td class="num">1</td><td class="num">0</td><td class="num">4</td><td class="msg">4 warnings</td><td><a href="logs/clean-lint_rtl.log">output.log</a></td></tr><tr id="step-sim_unit"><td><span class="st WAIVED">WAIVED</span></td><td class="step">sim_unit</td><td class="num">0.82s</td><td class="num dim">1.22 → 2.04s</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="msg">1 error waived · owner charan</td><td><a href="logs/clean-sim_unit.log">output.log</a></td></tr><tr id="step-sim_integration"><td><span class="st PASS">PASS</span></td><td class="step">sim_integration <span class="tag crit" title="On the critical path">critical</span></td><td class="num">2.83s</td><td class="num dim">1.22 → 4.05s</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="msg">1 warning</td><td><a href="logs/clean-sim_integration.log">output.log</a></td></tr><tr id="step-synth_quick"><td><span class="st PASS">PASS</span></td><td class="step">synth_quick <span class="tag crit" title="On the critical path">critical</span></td><td class="num">2.22s</td><td class="num dim">4.05 → 6.28s</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="msg">clean</td><td><a href="logs/clean-synth_quick.log">output.log</a></td></tr></tbody>
+  </table></div>
+</section>
+<section class="card" aria-labelledby="h-viol">
+  <div class="card-h"><h2 id="h-viol">Violations</h2><span class="sub" id="vcount">6 shown</span>
+    <div class="filters" role="group" aria-label="Filter violations">
+      <button class="chip" type="button" data-filter="all" aria-pressed="true">All<span class="c">6</span></button>
+      <button class="chip" type="button" data-filter="unwaived" aria-pressed="false">Unwaived errors<span class="c">0</span></button>
+      <button class="chip" type="button" data-filter="waived" aria-pressed="false">Waived<span class="c">2</span></button>
+      <button class="chip" type="button" data-filter="warning" aria-pressed="false">Warnings<span class="c">5</span></button>
+      <input class="search" id="vsearch" type="search" placeholder="filter by text…" aria-label="Filter violations by text">
+    </div>
+  </div>
+  <div class="card-b flush scroll-x"><table id="violations">
+    <thead><tr><th>Step</th><th>Rule</th><th>Severity</th><th class="num">Line</th><th>Message</th><th>Waiver</th></tr></thead>
+    <tbody><tr data-sev="WARNING" data-waived="1" class=waived-row><td class="step">lint_rtl</td><td class="mono">LINT-042</td><td><span class="sev WARNING">WARNING</span></td><td class="num"><a href="logs/clean-lint_rtl.log#L9">9</a></td><td class="msg">signal &#x27;clk_en&#x27; declared but never read (ip_block_a/ctrl.v:118)<div class="dim" style="font-size:12px">waived: Legacy debug signal; removal tracked in JIRA IPREG-1234</div></td><td><span class="tag" title="Legacy debug signal; removal tracked in JIRA IPREG-1234">waived · charan</span></td></tr><tr data-sev="WARNING" data-waived="0"><td class="step">lint_rtl</td><td class="mono">LINT-088</td><td><span class="sev WARNING">WARNING</span></td><td class="num"><a href="logs/clean-lint_rtl.log#L10">10</a></td><td class="msg">case statement without default branch (ip_block_a/decode.v:77)</td><td></td></tr><tr data-sev="WARNING" data-waived="0"><td class="step">lint_rtl</td><td class="mono">LINT-113</td><td><span class="sev WARNING">WARNING</span></td><td class="num"><a href="logs/clean-lint_rtl.log#L11">11</a></td><td class="msg">unused parameter &#x27;DEPTH_LOG2&#x27; (ip_block_a/fifo.v:12)</td><td></td></tr><tr data-sev="WARNING" data-waived="0"><td class="step">lint_rtl</td><td class="mono">LINT-107</td><td><span class="sev WARNING">WARNING</span></td><td class="num"><a href="logs/clean-lint_rtl.log#L12">12</a></td><td class="msg">implicit wire declaration &#x27;rst_sync&#x27; (ip_block_a/top.v:44)</td><td></td></tr><tr data-sev="ERROR" data-waived="1" class=waived-row><td class="step">sim_unit</td><td class="mono">SIM-ERR-007</td><td><span class="sev ERROR">ERROR</span></td><td class="num"><a href="logs/clean-sim_unit.log#L6">6</a></td><td class="msg">assertion failed at 1240ns: fifo overflow in u_fifo_rx<div class="dim" style="font-size:12px">waived: Known TB artifact on unit suite; fix in review (IPREG-1301)</div></td><td><span class="tag" title="Known TB artifact on unit suite; fix in review (IPREG-1301)">waived · charan</span></td></tr><tr data-sev="WARNING" data-waived="0"><td class="step">sim_integration</td><td class="mono">SIM-WRN-003</td><td><span class="sev WARNING">WARNING</span></td><td class="num"><a href="logs/clean-sim_integration.log#L28">28</a></td><td class="msg">X-propagation on bus &#x27;data_out&#x27; at 880ns</td><td></td></tr></tbody>
+  </table></div>
+</section>
+<section class="card" aria-labelledby="h-waive">
+  <div class="card-h"><h2 id="h-waive">Waiver debt</h2><span class="sub">a waiver is a debt, not a fix — every one has an owner</span></div>
+  <div class="card-b flush scroll-x"><table>
+    <thead><tr><th>Step</th><th>Rule</th><th>Owner</th><th>Reason</th></tr></thead>
+    <tbody><tr><td class="step">lint_rtl</td><td class="mono">LINT-042</td><td>charan</td><td class="msg">Legacy debug signal; removal tracked in JIRA IPREG-1234</td></tr><tr><td class="step">sim_unit</td><td class="mono">SIM-ERR-007</td><td>charan</td><td class="msg">Known TB artifact on unit suite; fix in review (IPREG-1301)</td></tr></tbody>
+  </table></div>
+</section>
+</main>
+<footer class="footer"><span>generated by gauntlet 0.2.0</span><span>every commit runs the gauntlet.</span></footer>
+<script>
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  b.addEventListener('click',function(){
+    var r=document.documentElement, cur=r.getAttribute('data-theme');
+    if(!cur){cur=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}
+    var next=cur==='light'?'dark':'light'; r.setAttribute('data-theme',next);
+    try{localStorage.setItem('gauntlet-report-theme',next);}catch(e){}
+  });
+})();
+
+(function(){
+  var table=document.getElementById('violations'); if(!table) return;
+  var rows=[].slice.call(table.querySelectorAll('tbody tr'));
+  var chips=[].slice.call(document.querySelectorAll('[data-filter]'));
+  var q=document.getElementById('vsearch'); var mode='all';
+  var count=document.getElementById('vcount');
+  function apply(){
+    var needle=(q&&q.value||'').toLowerCase(), shown=0;
+    rows.forEach(function(r){
+      var ok=mode==='all'||(mode==='unwaived'&&r.dataset.sev==='ERROR'&&r.dataset.waived==='0')||
+        (mode==='waived'&&r.dataset.waived==='1')||(mode==='warning'&&r.dataset.sev==='WARNING');
+      if(ok&&needle) ok=r.textContent.toLowerCase().indexOf(needle)>-1;
+      r.hidden=!ok; if(ok) shown++;
+    });
+    if(count) count.textContent=shown+' shown';
+  }
+  chips.forEach(function(c){c.addEventListener('click',function(){
+    mode=c.dataset.filter; chips.forEach(function(o){o.setAttribute('aria-pressed',String(o===c));}); apply();
+  });});
+  if(q) q.addEventListener('input',apply);
+})();
+</script>
+</body>
+</html>

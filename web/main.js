@@ -84,6 +84,7 @@
   if (term) {
     var LINES = [
       { t: "$ ", cls: "prompt" }, { t: "GAUNTLET_SEED=7 gauntlet run flows/smoke.yaml --workers 4\n", cls: "cmd" },
+      { t: "gauntlet 0.2.0 · smoke_ip_block_a · 4 steps\n", cls: "dim" },
       { t: "[  1.36s] ", cls: "dim" }, { t: "PASS", cls: "st st-pass" }, { t: "     lint_rtl\n", cls: "" },
       { t: "[  0.97s] ", cls: "dim" }, { t: "WAIVED", cls: "st st-waived" }, { t: "   sim_unit\n", cls: "" },
       { t: "[  2.98s] ", cls: "dim" }, { t: "PASS", cls: "st st-pass" }, { t: "     sim_integration\n", cls: "" },
@@ -133,6 +134,33 @@
       tick();
     }
   }
+
+  /* --------------------------------------------------- dashboard tour */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tour-tab"));
+  var tourUrl = document.getElementById("tourUrl");
+  function selectTab(tab, focus) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      var panel = document.getElementById(t.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !on;
+    });
+    if (tourUrl) tourUrl.textContent = tab.getAttribute("data-url") || "";
+    if (focus) tab.focus();
+  }
+  tabs.forEach(function (tab, i) {
+    tab.tabIndex = tab.getAttribute("aria-selected") === "true" ? 0 : -1;
+    tab.addEventListener("click", function () { selectTab(tab); });
+    tab.addEventListener("keydown", function (e) {
+      var next = null;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+      if (e.key === "Home") next = tabs[0];
+      if (e.key === "End") next = tabs[tabs.length - 1];
+      if (next) { e.preventDefault(); selectTab(next, true); }
+    });
+  });
 
   /* ---------------------------------------------------- contact form */
   var form = document.getElementById("contactForm");

@@ -1,0 +1,29 @@
+INFO: compiling testbench tb_ip_block_a (suite=integration)
+INFO: elaborating top tb_ip_block_a ... done
+INFO: running 24 tests, seed=7624
+TEST reset_seq        PASS
+TEST reg_rw           PASS
+TEST fifo_fill        PASS
+TEST fifo_drain       PASS
+TEST irq_mask         PASS
+TEST burst_write      PASS
+TEST burst_read       PASS
+TEST backpressure     PASS
+TEST clk_gate         PASS
+TEST dma_short        PASS
+TEST dma_long         PASS
+TEST err_inject       PASS
+TEST parity           PASS
+TEST timeout_cnt      PASS
+TEST addr_wrap        PASS
+TEST arb_fair         PASS
+TEST low_power        PASS
+TEST wake_event       PASS
+TEST csr_lock         PASS
+TEST bist_smoke       PASS
+TEST mixed_traffic    PASS
+TEST rand_stall       PASS
+TEST overflow_guard   PASS
+TEST soak_mini        PASS
+[SIM-WRN-003] WARNING: X-propagation on bus 'data_out' at 880ns
+INFO: 24/24 tests passed

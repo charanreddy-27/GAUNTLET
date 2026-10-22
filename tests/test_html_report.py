@@ -28,7 +28,7 @@ def test_html_report_contains_steps_links_and_violations():
     assert 'href="runs/run_x/lint/output.log"' in page
     assert "LINT-201" in page
     assert "latch &lt;inferred&gt; &amp; bad" in page  # escaped
-    assert "(flaky)" in page
+    assert "class=\"tag flaky\"" in page
     assert "SKIPPED" in page
 
 
