@@ -6,16 +6,29 @@
 <title>GAUNTLET — the build story</title>
 <meta name="description" content="Why GAUNTLET exists, how it was built in a focused two-day sprint, the interesting technical decisions, and the tech stack behind a miniature IP-regression platform.">
 <meta name="author" content="Chanda Charan Reddy">
-<meta name="theme-color" content="#070b14">
+<meta name="theme-color" content="#070b14" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
+<link rel="canonical" href="https://gauntlet-charanreddy-27s-projects.vercel.app/project">
 
 <meta property="og:type" content="article">
+<meta property="og:site_name" content="GAUNTLET">
 <meta property="og:title" content="GAUNTLET — the build story">
 <meta property="og:description" content="Why GAUNTLET exists, the build timeline, the hard technical decisions, and the stack.">
-<meta property="og:image" content="og.png">
+<meta property="og:image" content="https://gauntlet-charanreddy-27s-projects.vercel.app/og.png">
+<meta property="og:image:alt" content="GAUNTLET — every commit runs the gauntlet">
+<meta property="og:url" content="https://gauntlet-charanreddy-27s-projects.vercel.app/project">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="GAUNTLET — the build story">
 <meta name="twitter:description" content="Why GAUNTLET exists, the timeline, the hard decisions, and the stack.">
-<meta name="twitter:image" content="og.png">
+<meta name="twitter:image" content="https://gauntlet-charanreddy-27s-projects.vercel.app/og.png">
+
+<!-- Applies the stored/system theme before first paint, so light-mode
+     visitors never see a flash of the dark default. -->
+<script>
+(function(){try{var t=localStorage.getItem("gauntlet-theme");
+if(!t)t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";
+document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
+</script>
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +46,8 @@
   <div class="nav-links" id="navLinks">
     <a href="index.html">Overview</a>
     <a href="index.html#how">How it works</a>
+    <a href="index.html#playground">Playground</a>
+    <a href="index.html#dashboard">Dashboard</a>
     <a href="index.html#features">Features</a>
     <a href="project.html" aria-current="page">The project</a>
     <a href="about.html">About</a>
@@ -42,7 +57,7 @@
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
     </button>
-    <a class="btn btn-primary" href="https://github.com/charanreddy-27" target="_blank" rel="noopener">
+    <a class="btn btn-primary" href="https://github.com/charanreddy-27/GAUNTLET" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
       GitHub
     </a>
@@ -96,8 +111,8 @@
 <section style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
   <div class="wrap">
     <span class="eyebrow">How it came together</span>
-    <h2 class="section-title">A focused two-day sprint.</h2>
-    <p class="section-lead">Scoped tight on purpose. Built strictly in phases — core first, stretch features only after the demo was already complete.</p>
+    <h2 class="section-title">A focused two-day sprint. Then a second pass.</h2>
+    <p class="section-lead">Scoped tight on purpose. Built strictly in phases — core first, stretch features only after the demo was already complete. v0.2 came later, once the core had earned it.</p>
 
     <div class="timeline">
       <div class="tl-item reveal">
@@ -127,13 +142,18 @@
       </div>
       <div class="tl-item reveal">
         <div class="tl-date">JUL 2026 · DAY 2, EVENING — POLISH &amp; PROOF</div>
-        <h4>SQLite history, 36+ offline tests, seeded determinism</h4>
+        <h4>SQLite history, 43 offline tests, seeded determinism</h4>
         <p>Persistence so history/report/diff work from the DB alone. A deterministic mock-tool harness (<code>GAUNTLET_SEED</code> for byte-identical runs, <code>GAUNTLET_FLAKE</code> to inject regressions). A fast, fully-offline test suite — because a regression platform with a flaky test suite is a bad joke.</p>
       </div>
       <div class="tl-item launch reveal">
         <div class="tl-date">JUL 2026 · STRETCH &amp; LAUNCH</div>
         <h4>HTML reports, CI workflow, retries — and this site</h4>
         <p>Only after the core was demo-complete: self-contained HTML reports, a GitHub Actions workflow that archives run evidence, honest flaky-pass retries — and a cross-platform test rewrite so the whole thing is green on Linux, macOS, and Windows.</p>
+      </div>
+      <div class="tl-item launch reveal">
+        <div class="tl-date">OCT 2026 · v0.2 — FROM A REPORT TO A PLATFORM</div>
+        <h4>A dashboard, CI-native outputs, and a memory for flakiness</h4>
+        <p>The scheduler now records every step's window, so reports draw the DAG with its critical path and a timeline of what really ran in parallel. <code>gauntlet serve</code> puts history, reports, diffs and a log viewer on localhost — still stdlib only. <code>--junit</code> and <code>--markdown</code> speak CI's language, <code>stats</code> names the steps that keep flipping, and <code>latest~1 latest</code> works anywhere a run id does. Old databases migrate in place; the suite grew from 43 to 67 tests. One dependency, still.</p>
       </div>
     </div>
   </div>
@@ -177,7 +197,8 @@
       <div class="stack-row reveal"><div class="s-name">ThreadPoolExecutor <span class="tag">concurrency</span></div><p>Workers block in <code>subprocess.wait()</code> where the GIL is released, so threads give true parallelism without the cognitive tax of asyncio or multiprocessing.</p></div>
       <div class="stack-row reveal"><div class="s-name">SQLite (stdlib) <span class="tag">storage</span></div><p>One file, three tables, no ORM, no server. It's the platform's memory — durable, queryable, zero-ops.</p></div>
       <div class="stack-row reveal"><div class="s-name">PyYAML <span class="tag">the one dep</span></div><p>Flows, rulepacks and waivers are declarative YAML. The only third-party package in the whole project — and it earns the slot.</p></div>
-      <div class="stack-row reveal"><div class="s-name">re + string.Template <span class="tag">parsing / reports</span></div><p>Compiled-once regex rulepacks classify logs line-by-line; the HTML report is a stdlib template — a self-contained page with no build step and no new deps.</p></div>
+      <div class="stack-row reveal"><div class="s-name">re + inline SVG <span class="tag">parsing / reports</span></div><p>Compiled-once regex rulepacks classify logs line-by-line. Reports lay out the DAG and timeline in Python and emit plain SVG — a self-contained page that renders offline, prints, and needs no JavaScript to be read.</p></div>
+      <div class="stack-row reveal"><div class="s-name">http.server <span class="tag">dashboard</span></div><p><code>gauntlet serve</code> is a read-only <code>ThreadingHTTPServer</code> over the same SQLite file. Logs are only served from inside the runs directory, whatever the database says.</p></div>
       <div class="stack-row reveal"><div class="s-name">pytest + GitHub Actions <span class="tag">quality</span></div><p>A fast, deterministic, fully-offline suite, run in CI on every push — with run artifacts uploaded even when a run fails, so the evidence survives.</p></div>
     </div>
   </div>
@@ -191,7 +212,7 @@
       <h2>Want to build something<br>or collaborate?</h2>
       <p>The source is on GitHub — clone it and run the money shot in three commands. If you want to talk regression infra, LLM systems, or anything in between, I'm around.</p>
       <div class="cta-actions">
-        <a class="btn btn-primary" href="https://github.com/charanreddy-27" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://github.com/charanreddy-27/GAUNTLET" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
           View source
         </a>
@@ -218,7 +239,7 @@
           <a href="index.html#how">How it works</a>
           <a href="index.html#features">Features</a>
           <a href="project.html">The build story</a>
-          <a href="https://github.com/charanreddy-27" target="_blank" rel="noopener">Source ↗</a>
+          <a href="https://github.com/charanreddy-27/GAUNTLET" target="_blank" rel="noopener">Source ↗</a>
         </div>
         <div class="f-col">
           <h5>Charan</h5>
@@ -236,6 +257,6 @@
   </div>
 </footer>
 
-<script src="main.js"></script>
+<script src="main.js" defer></script>
 </body>
 </html>

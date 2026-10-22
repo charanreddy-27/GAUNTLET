@@ -122,10 +122,17 @@ gauntlet/
     rules.py       # rulepack YAML → compiled regex Rules
     parser.py      # stream log → Violations; LogEvaluator; finalize_status
     waivers.py     # waiver YAML → Waivers; apply_waivers (in place)
-  store.py         # SQLite persistence (3 tables, no ORM)
+  store.py         # SQLite persistence (4 tables, no ORM, in-place migration)
   diff.py          # RunRecord × RunRecord → RunDiff buckets
+  graph.py         # DAG layering, critical path, ascii / mermaid / dot
+  stats.py         # per-step stability across run history
   report.py        # terminal rendering (run / history / diff)
-  html_report.py   # single-file HTML report (string.Template)
+  term.py          # TTY-only status colors (NO_COLOR / FORCE_COLOR aware)
+  junit.py         # JUnit XML for CI test tabs
+  markdown.py      # GitHub-flavoured summaries ($GITHUB_STEP_SUMMARY)
+  html_report.py   # single-file HTML reports (run + diff)
+  ui/              # shared design system: theme.py, charts.py (SVG), pages.py
+  server.py        # `gauntlet serve`: read-only stdlib dashboard
   cli.py           # argparse entrypoint; wires it all together
 
 flows/  rulepacks/  waivers/     # declarative YAML inputs
@@ -194,18 +201,57 @@ between runs** — tests can assert on exact violations. A separate
 what lets the test suite *prove the diff catches a regression* — the entire
 reason the platform exists — without any nondeterminism.
 
+### 5.6 Timing capture and the critical path (v0.2)
+
+The scheduler stamps every step with `start_s`/`end_s` against one monotonic
+origin taken in `execute()`, plus `attempts`. Three things fall out of that:
+
+- **The timeline** in reports is drawn from real windows, so you can *see*
+  that the two sims overlapped and synth waited for the slower one.
+- **Peak parallelism** (`graph.max_parallelism`) is a sweep over start/end
+  events, ends sorted before starts so touching windows don't count as overlap.
+- **The critical path** (`graph.critical_path`) is the heaviest dependency
+  chain weighted by duration — the chain that bounded wall-clock time, i.e. the
+  one worth making faster. Unweighted, the same function gives the deepest chain.
+
+Run duration now comes from the step windows (millisecond precision) and falls
+back to the second-precision ISO stamps for v0.1 runs.
+
+### 5.7 Serving logs without becoming a file server (v0.2)
+
+The dashboard's log viewer takes a run and a step, looks the log path up in
+the database, resolves it, and refuses anything that doesn't resolve inside
+the runs directory. The URL never carries a path, and a tampered database
+can't point it at `/etc/passwd` — there's a test that tries exactly that.
+Logs are streamed with a line and byte cap, because the whole point of
+streaming (§5.4) is that real logs are gigabytes.
+
 ---
 
 ## 6. Persistence schema
 
-Three tables, no ORM (`store.py`):
+Four tables, no ORM (`store.py`):
 
 ```sql
-runs(run_id PK, flow_name, started_at, finished_at, status)
+runs(run_id PK, flow_name, started_at, finished_at, status, git_commit, git_branch)
 step_results(run_id, step_id, status, exit_code, duration_s, log_path, flaky,
-             PRIMARY KEY(run_id, step_id))
-violations(run_id, step_id, rule_id, severity, line_no, message, waived, waive_reason)
+             start_s, end_s, attempts, PRIMARY KEY(run_id, step_id))
+violations(run_id, step_id, rule_id, severity, line_no, message, waived,
+           waive_reason, waive_owner)
+run_edges(run_id, step_id, dep)   -- the DAG as it was when the run executed
 ```
+
+**Migrations are additive and automatic.** v0.2 added the timing, attempt,
+waiver-owner and git columns plus `run_edges`. Opening a v0.1 database runs
+`ALTER TABLE … ADD COLUMN` for whatever is missing and nothing else — old runs
+keep loading (their timing is simply `None`, and reports say so), new runs land
+in the same file. `run_edges` stores one node row per step (`dep IS NULL`)
+before its edges, so steps with no dependencies survive and flow order
+round-trips.
+
+`latest` and `latest~N` resolve to run ids in `RunStore.resolve`, ordered by
+`started_at` and then insertion order — two runs that start in the same second
+(common in CI) still have a well-defined "latest".
 
 The `violations.waive_reason` column is a deliberate deviation beyond a minimal
 schema: it lets `gauntlet report <run_id>` reproduce the *full* report —
@@ -221,15 +267,17 @@ Consciously **out of scope** (and why):
 - **No plugin system / no config server** — would dwarf the core loop this
   project exists to illustrate.
 - **No asyncio** — wrong tool for a subprocess-bound workload (see §5.2).
-- **No web UI in the core** — the platform is a CLI + library; the `web/`
-  showcase site is a separate static artifact, not part of the tool.
+- **No control plane** — `gauntlet serve` (v0.2) is a *read-only* view over
+  the SQLite file: no auth, no writes, no job queue, localhost by default. The
+  CLI stays the only thing that runs flows. The `web/` showcase site is a
+  separate static artifact.
 - **Naive retries only** — immediate re-attempts, no backoff. Enough to model
   "flaky pass is information, not a pass"; a real system would add jittered
   backoff and per-tool policy.
 
 What a production version would add next: distributed workers (the `Step` ABC is
 already the seam), incremental/affected-only scheduling, artifact/log object
-storage, a real web dashboard on top of `store.py`, and richer waiver expiry.
+storage, auth + multi-user on top of the dashboard, and waiver expiry.
 
 ---
 
@@ -240,3 +288,5 @@ storage, a real web dashboard on top of `store.py`, and richer waiver expiry.
 3. [`gauntlet/scheduler.py`](gauntlet/scheduler.py) — `execute()` and the ready-set loop.
 4. [`gauntlet/steps.py`](gauntlet/steps.py) — `_kill_process_group` is the hard part.
 5. [`gauntlet/diff.py`](gauntlet/diff.py) — the payoff.
+6. [`gauntlet/graph.py`](gauntlet/graph.py) and [`gauntlet/stats.py`](gauntlet/stats.py) — what v0.2 learned to say about a run, and about history.
+7. [`gauntlet/server.py`](gauntlet/server.py) — the whole dashboard, routes to containment check, in one file.

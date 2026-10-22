@@ -5,14 +5,9 @@
   var root = document.documentElement;
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------------------------------------------------------- theme */
-  var stored = null;
-  try { stored = localStorage.getItem("gauntlet-theme"); } catch (e) {}
-  if (stored) {
-    root.setAttribute("data-theme", stored);
-  } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-    root.setAttribute("data-theme", "light");
-  }
+  /* ---------------------------------------------------------- theme
+     The initial theme is resolved by the inline bootstrap in <head> so
+     there is no flash before first paint; here we only handle toggling. */
   var themeToggle = document.getElementById("themeToggle");
   if (themeToggle) {
     themeToggle.addEventListener("click", function () {
@@ -65,12 +60,16 @@
 
   /* --------------------------------------------- copy-to-clipboard */
   document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    // Captured once, before any click: re-reading innerHTML inside the
+    // handler would latch "copied ✓" as the label on a rapid second click.
+    var original = btn.innerHTML;
+    var resetTimer = null;
     btn.addEventListener("click", function () {
       var text = btn.getAttribute("data-copy") || "";
       var done = function () {
-        var original = btn.innerHTML;
         btn.textContent = "copied ✓";
-        setTimeout(function () { btn.innerHTML = original; }, 1400);
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(function () { btn.innerHTML = original; }, 1400);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done).catch(done);
@@ -85,6 +84,7 @@
   if (term) {
     var LINES = [
       { t: "$ ", cls: "prompt" }, { t: "GAUNTLET_SEED=7 gauntlet run flows/smoke.yaml --workers 4\n", cls: "cmd" },
+      { t: "gauntlet 0.2.0 · smoke_ip_block_a · 4 steps\n", cls: "dim" },
       { t: "[  1.36s] ", cls: "dim" }, { t: "PASS", cls: "st st-pass" }, { t: "     lint_rtl\n", cls: "" },
       { t: "[  0.97s] ", cls: "dim" }, { t: "WAIVED", cls: "st st-waived" }, { t: "   sim_unit\n", cls: "" },
       { t: "[  2.98s] ", cls: "dim" }, { t: "PASS", cls: "st st-pass" }, { t: "     sim_integration\n", cls: "" },
@@ -135,6 +135,33 @@
     }
   }
 
+  /* --------------------------------------------------- dashboard tour */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tour-tab"));
+  var tourUrl = document.getElementById("tourUrl");
+  function selectTab(tab, focus) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      var panel = document.getElementById(t.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !on;
+    });
+    if (tourUrl) tourUrl.textContent = tab.getAttribute("data-url") || "";
+    if (focus) tab.focus();
+  }
+  tabs.forEach(function (tab, i) {
+    tab.tabIndex = tab.getAttribute("aria-selected") === "true" ? 0 : -1;
+    tab.addEventListener("click", function () { selectTab(tab); });
+    tab.addEventListener("keydown", function (e) {
+      var next = null;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+      if (e.key === "Home") next = tabs[0];
+      if (e.key === "End") next = tabs[tabs.length - 1];
+      if (next) { e.preventDefault(); selectTab(next, true); }
+    });
+  });
+
   /* ---------------------------------------------------- contact form */
   var form = document.getElementById("contactForm");
   if (form) {
@@ -150,7 +177,7 @@
       }
       var subject = encodeURIComponent("GAUNTLET — hello from " + name);
       var body = encodeURIComponent(message + "\n\n— " + name + " (" + email + ")");
-      window.location.href = "mailto:charanreddychanda@gmail.com?subject=" + subject + "&body=" + body;
+      window.location.href = "mailto:charanreddychanda27@gmail.com?subject=" + subject + "&body=" + body;
       if (status) { status.textContent = "Opening your mail client…"; status.className = "form-status ok"; }
     });
   }

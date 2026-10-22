@@ -20,7 +20,7 @@ def parse_log(log_path: str | Path, rulepack: Rulepack) -> list[Violation]:
     pattern captures one (e.g. LINT-201), else the rulepack rule's own id.
     """
     violations: list[Violation] = []
-    with open(log_path, "r", errors="replace") as fh:
+    with open(log_path, errors="replace") as fh:
         for line_no, line in enumerate(fh, start=1):
             for rule in rulepack.rules:
                 match = rule.pattern.search(line)

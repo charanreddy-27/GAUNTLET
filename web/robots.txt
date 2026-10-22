@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gauntlet-charanreddy-27s-projects.vercel.app/sitemap.xml

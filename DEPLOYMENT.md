@@ -12,13 +12,73 @@ checklist of the things only you can do.
 - **[`vercel.json`](vercel.json)** at the repo root tells Vercel to serve the
   `web/` folder as static output, with:
   - `outputDirectory: "web"` — the site root
-  - `buildCommand: null` — nothing to build
+  - `framework: null`, plus explicit no-op `buildCommand` and `installCommand`
+    — see [Why these are set explicitly](#why-framework-and-the-commands-are-set-explicitly)
   - `cleanUrls: true` — `/about` serves `web/about.html` (no `.html` needed)
-  - long-lived caching for `styles.css`, `main.js`, `favicon.svg`, `og.png`
-  - sensible security headers (`X-Content-Type-Options`, `X-Frame-Options`,
-    `Referrer-Policy`)
+  - revalidating cache headers on the assets (they have no content hash in the
+    filename, so `immutable` would pin stale CSS/JS for a year)
+  - security headers: `X-Content-Type-Options`, `X-Frame-Options`,
+    `Referrer-Policy`, `Permissions-Policy`, and a `Content-Security-Policy`
+    scoped to what the site actually loads (self + Google Fonts)
+- **[`.vercelignore`](.vercelignore)** keeps the Python platform, tests and docs
+  out of the deployment entirely — only `web/` ships.
 - **No environment variables are required.** The contact form uses a `mailto:`
   handoff (no backend, no secrets).
+- **`web/demo/`** holds real reports produced by the tool itself — a regression
+  run, its clean baseline, and the diff between them, plus their logs. They are
+  generated, not hand-written: after changing the report renderer, run
+  `python scripts/build_site_demo.py` and commit the result. `web/assets/` holds
+  the dashboard screenshots used by the site's tour.
+- **`web/playground.js`** powers the in-browser playground. It mirrors the
+  scheduler/parser/diff rules in vanilla JS; if those rules change in Python,
+  change them there too.
+
+### Why `framework` and the commands are set explicitly
+
+Vercel's zero-config detection runs whenever `framework`, `buildCommand` or
+`installCommand` is `null`. Because `pyproject.toml` sits at the repo root, that
+detection classified GAUNTLET as a **Python backend** and every build failed
+before it started:
+
+```
+Error: No python entrypoint found. Set "tool.vercel.entrypoint" in pyproject.toml
+or define an entrypoint in one of: app.py, index.py, server.py, main.py, ...
+```
+
+The project's stored Framework Preset was `python` for the same reason. Setting
+all three keys to explicit values in `vercel.json` overrides the stored preset
+and skips detection, so the build is just "copy `web/`". `.vercelignore` removes
+`pyproject.toml` from the deployment as a second line of defence.
+
+**If you ever add a real Python API to this project**, don't revert these keys —
+add an `api/` directory (Vercel Functions) instead, and give the function its
+own entrypoint.
+
+### The Production Branch must be `main`
+
+This one is a **dashboard setting** — nothing in this repo can set it, so it is
+worth knowing about.
+
+Vercel pins a project's Production Branch to whatever branch it was **first
+imported from**. This project was imported from `claude/gauntlet-ip-regression-me6p5p`,
+so that became the production branch. The symptom is confusing, because nothing
+looks broken:
+
+- merges to `main` build successfully, but land as **preview** deployments
+  (`target: null`) instead of production;
+- `gauntlet-charanreddy-27s-projects.vercel.app` keeps serving whatever the last
+  real production deployment was — and serves **nothing at all** if that
+  deployment is deleted;
+- the Deployments list is full of green builds while the live URL is stale or
+  blank.
+
+Fix it once, in **Project → Settings → Git → Production Branch → `main` → Save**,
+then promote the newest `main` deployment (**Deployments → ⋯ → Promote to
+Production**). After that every merge to `main` publishes to production
+automatically.
+
+A deployment's `target` field is the thing to check: `"production"` means it is
+live on the production domain, `null` means it is only a preview.
 
 ---
 
@@ -76,26 +136,32 @@ These are the steps GAUNTLET can't do for you. None take long.
    git push -u origin main
    ```
 2. **Deploy to Vercel** using Option A or B above.
-3. **Update the canonical URLs** once you know the live URL. In
-   `web/index.html`, `web/about.html`, `web/project.html`, replace the
-   `og:image` / `og:url` values with the absolute deployed URL
-   (e.g. `https://gauntlet.charanreddy.dev/og.png`) so link previews render on
-   LinkedIn/Twitter/Slack. Also update the **Live site** link in `README.md`.
-4. **Drop in real screenshots.** The README hero currently uses `web/og.png`.
+3. **Set the Production Branch to `main`** — Project → Settings → Git. See
+   [The Production Branch must be `main`](#the-production-branch-must-be-main).
+   Until this is right, merges to `main` only ever produce preview deployments
+   and the live URL never updates.
+4. **Only if you add a custom domain:** the canonical/OG URLs in
+   `web/index.html`, `web/about.html`, `web/project.html`, plus
+   `web/robots.txt`, `web/sitemap.xml` and the **Live site** link in
+   `README.md`, are currently pinned to the production Vercel URL
+   `https://gauntlet-charanreddy-27s-projects.vercel.app`. Search-and-replace
+   that one string with the new domain — they must stay **absolute** or link
+   previews break on LinkedIn/Twitter/Slack.
+5. **Drop in real screenshots.** The README hero currently uses `web/og.png`.
    If you want in-app screenshots, add them under a `screenshots/` (or
    `web/assets/`) folder and reference them in `README.md`. A short GIF of
    `gauntlet run` + `diff` is the single highest-leverage asset here.
-5. **Add the LinkedIn post link.** Once you post about the project, put the URL
+6. **Add the LinkedIn post link.** Once you post about the project, put the URL
    in the `project.html` CTA ("Read the LinkedIn post") and the README.
-6. **Validate the social card.** Paste the live URL into
+7. **Validate the social card.** Paste the live URL into
    [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) and
    [opengraph.xyz](https://www.opengraph.xyz) to confirm the OG image renders.
-7. **Sanity-check the contact form.** It opens a `mailto:` to
-   `charanreddychanda@gmail.com`. Confirm that's the address you want (note:
-   the "who this is" block also lists `charanreddychanda@gmail.com`; the CLAUDE
-   profile lists `charanreddychanda27@gmail.com` — pick one and make it
-   consistent).
-8. **(Optional) Run the Python demo in CI or locally** and capture the terminal
+8. **Sanity-check the contact address.** The site was inconsistent between
+   `charanreddychanda@gmail.com` and `charanreddychanda27@gmail.com`; it is now
+   consistently **`charanreddychanda27@gmail.com`** (the address on the GitHub
+   and Vercel accounts) in `web/about.html` and `web/main.js`. If you'd rather
+   use the other one, change it in both files.
+9. **(Optional) Run the Python demo in CI or locally** and capture the terminal
    output / HTML report (`gauntlet report <run> --html out.html`) as an artifact
    to link from the site.
 
@@ -118,7 +184,10 @@ The `gauntlet` CLI is a separate artifact from the website — Vercel only serve
 
 | Symptom | Fix |
 |---|---|
+| `Error: No python entrypoint found` | `framework`/`buildCommand`/`installCommand` fell back to auto-detection and `pyproject.toml` made Vercel think this is a Python backend. Keep all three set explicitly in `vercel.json` (see above). |
+| Builds are green but the live URL is stale or blank | The deployments are landing as previews. Check the Production Branch is `main` (see above), then promote the latest `main` deployment. |
 | Vercel builds nothing / 404 at root | Ensure `vercel.json` is at the **repo root**, or set Root Directory to `web` in the dashboard. |
+| Site shows stale CSS/JS after a deploy | Assets are cached for an hour with `stale-while-revalidate`; hard-reload, or wait it out. Don't reintroduce `immutable` — the filenames carry no content hash. |
 | `/about` 404s but `/about.html` works | `cleanUrls` isn't applied — confirm `vercel.json` deployed; redeploy. |
 | OG image doesn't show in previews | `og:image` must be an **absolute** URL (see checklist #3); re-scrape with the LinkedIn/Twitter inspector. |
 | Fonts don't load | The site uses Google Fonts over HTTPS; check the network tab / any content blocker. Everything else is self-hosted. |

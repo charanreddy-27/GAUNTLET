@@ -6,9 +6,11 @@ so N threads give real parallelism for the cost of none of the complexity.
 """
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Protocol
 
 from .models import (
     BLOCKING_STATUSES,
@@ -60,6 +62,9 @@ class Scheduler:
         results: dict[str, StepResult] = {}
         futures: dict[Future, str] = {}
         stop_submitting = False
+        # Every step's window is measured against one origin, so reports can
+        # draw a timeline and show which steps really overlapped.
+        t0 = time.monotonic()
 
         def record(result: StepResult) -> None:
             results[result.step_id] = result
@@ -69,7 +74,7 @@ class Scheduler:
 
         def skip(sid: str) -> None:
             del pending[sid]
-            record(StepResult(sid, StepStatus.SKIPPED, None, 0.0, ""))
+            record(StepResult(sid, StepStatus.SKIPPED, None, 0.0, "", attempts=0))
 
         def flush_ready(pool: ThreadPoolExecutor) -> None:
             # Loop to a fixpoint so SKIPPED cascades through the DAG.
@@ -84,7 +89,7 @@ class Scheduler:
                     elif not stop_submitting and all(
                         ds in PASSING_STATUSES for ds in dep_statuses
                     ):
-                        futures[pool.submit(self._run_step, spec, run_dir)] = sid
+                        futures[pool.submit(self._run_step, spec, run_dir, t0)] = sid
                         del pending[sid]
                         progressed = True
 
@@ -105,17 +110,21 @@ class Scheduler:
             skip(sid)
         return results
 
-    def _run_step(self, spec: StepSpec, run_dir: Path) -> StepResult:
+    def _run_step(self, spec: StepSpec, run_dir: Path, t0: float) -> StepResult:
         """Run (and evaluate) one step, with naive immediate retries.
 
         A step that only passes on a retry is marked flaky=True — it still
         satisfies its dependents, but the wobble stays visible.
         """
+        start_s = round(time.monotonic() - t0, 3)
         for attempt in range(spec.retries + 1):
             result = self._step_factory(spec).run(run_dir)
             if self._evaluator is not None:
                 result = self._evaluator.evaluate(spec, result)
             if result.status in PASSING_STATUSES:
                 result.flaky = attempt > 0
-                return result
+                break
+        result.attempts = attempt + 1
+        result.start_s = start_s
+        result.end_s = round(time.monotonic() - t0, 3)
         return result

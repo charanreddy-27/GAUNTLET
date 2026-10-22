@@ -1,0 +1,30 @@
+INFO: compiling testbench tb_ip_block_a (suite=unit)
+INFO: elaborating top tb_ip_block_a ... done
+INFO: running 24 tests, seed=7650
+TEST reset_seq        PASS
+TEST reg_rw           PASS
+[SIM-ERR-007] ERROR: assertion failed at 1240ns: fifo overflow in u_fifo_rx
+TEST fifo_fill        FAIL
+TEST fifo_drain       PASS
+TEST irq_mask         PASS
+TEST burst_write      PASS
+TEST burst_read       PASS
+[SIM-ERR-007] ERROR: assertion failed at 8510ns: fifo overflow in u_fifo_tx
+TEST backpressure     FAIL
+TEST clk_gate         PASS
+TEST dma_short        PASS
+TEST dma_long         PASS
+TEST err_inject       PASS
+TEST parity           PASS
+TEST timeout_cnt      PASS
+TEST addr_wrap        PASS
+TEST arb_fair         PASS
+TEST low_power        PASS
+TEST wake_event       PASS
+TEST csr_lock         PASS
+TEST bist_smoke       PASS
+TEST mixed_traffic    PASS
+TEST rand_stall       PASS
+TEST overflow_guard   PASS
+TEST soak_mini        PASS
+INFO: 22/24 tests passed

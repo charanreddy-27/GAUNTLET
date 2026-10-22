@@ -3,10 +3,10 @@
 Commands run through tests/probe.py (see conftest) so retry timing and exit
 codes are identical across operating systems.
 """
-from probe import cmd
 from gauntlet.flow import build_flow
 from gauntlet.models import FlowSpec, StepSpec, StepStatus
 from gauntlet.scheduler import Scheduler
+from probe import cmd
 
 
 def _run(steps, tmp_path, **kw):
